@@ -1,0 +1,188 @@
+---
+title: "1_clean"
+author: "Thomas E. Metherell"
+date: "2022-12-06"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r dependencies}
+library(haven)
+library(tidyverse)
+library(magrittr)
+```
+
+```{r load_data}
+age_10 <- read_dta("..\\..\\Data\\Raw\\3_age_10\\UKDA-3723-stata\\stata\\stata11_se\\sn3723.dta")
+age_16 <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs4derived.dta")
+CLOSER_MH <- read_dta("..\\..\\Data\\Raw\\CLOSER_age_10_mental_health\\UKDA-8882-stata\\stata\\stata13\\bcs70_closer_wp20.dta")
+CLOSER_env <- read_dta("..\\..\\Data\\Raw\\CLOSER_childhood_environment_adult_wellbeing\\UKDA-8553-stata\\stata\\stata13\\bcs70_closer_wp9.dta")
+CLOSER_BMI <- read_dta("..\\..\\Data\\Raw\\CLOSER_height_weight_BMI\\UKDA-8551-stata\\stata\\stata13\\bcs70_closer_wp1.dta")
+CLOSER_SES <- read_dta("..\\..\\Data\\Raw\\CLOSER_socioeconomic_measures\\UKDA-8305-stata\\stata\\stata13\\bcs70_closer_wp2ses.dta")
+```
+
+```{r select_vars}
+age_10 %<>% select(
+  bcsid,
+  c3_11,
+  c9_1:c9_7,
+  i3504:i3540, # BAS word definitions
+  i3541:i3574, # BAS recall of digits
+  i3617:i3644, # BAS matrices
+  i4201:i4221, # BAS word similarities (derived)
+  tests10,
+  m43:m61, # Rutter scale
+  j127:j178b # Child Development Scale
+)
+
+age_16 %<>% select(
+  BCSID,
+  BD4MAL, # Total Malaise score
+  BD4RUTT # Total Rutter behaviour score
+)
+
+age_16 %<>% rename(bcsid = BCSID)
+
+CLOSER_env %<>% select(
+  bcsid,
+  tenure,
+  prmnh,
+  intbcsz,
+  extbcsz
+)
+
+CLOSER_MH %<>% select(
+  -closerid,
+  -stid
+)
+
+# Restricting CLOSER WP1 data to those collected at age 10 only
+CLOSER_BMI <- CLOSER_BMI[CLOSER_BMI$visitage == 10,]
+
+CLOSER_BMI %<>% select(
+  bcsid,
+  bmi
+)
+
+CLOSER_SES %<>% select(
+  bcsid,
+  fclrg90
+)
+```
+
+```{r define_na}
+# Age 10 dataset (mother's social class only): negative values and values more than 7 become NA
+is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] < 0
+is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] > 7
+
+# Age 16 dataset: negative values become NA
+is.na(age_16[,]) <- age_16[,] < 0
+
+# CLOSER SES dataset: negative values become NA
+is.na(CLOSER_SES[,]) <- CLOSER_SES[,] < 0
+
+# CLOSER childhood environment dataset (all variables except internalising/externalising behaviour): negative values become NA
+is.na(CLOSER_env[c("prmnh", "tenure")]) <- CLOSER_env[c("prmnh", "tenure")] < 0
+
+# CLOSER childhood environment dataset (internalising/externalising behaviour): values less than -100 become NA
+is.na(CLOSER_env[c("intbcsz", "extbcsz")]) <- CLOSER_env[c("intbcsz", "extbcsz")] < -100
+```
+
+```{r cognitive_ability_pca}
+# Summing scores from the four BAS tests conducted, or reporting NA if the BAS were not completed
+age_10 %<>% mutate(
+  
+  # Word Definitions
+  dv_bas_worddef = case_when(
+    tests10 == 1 ~ rowSums(across(i3504:i3540, `==`, 1)),
+    tests10 == 0 ~ NA_real_
+  ),
+  
+  # Recall of Digits
+  dv_bas_recall = case_when(
+    tests10 == 1 ~ rowSums(across(i3541:i3574, `==`, 1)),
+    tests10 == 0 ~ NA_real_
+  ),
+  
+  # Matrices
+  dv_bas_matrices = case_when(
+    tests10 == 1 ~ rowSums(across(i3617:i3644, `==`, 1)),
+    tests10 == 0 ~ NA_real_
+  ),
+  
+  # Word Similarities
+  dv_bas_wordsim = case_when(
+    tests10 == 1 ~ rowSums(across(i4201:i4221, `==`, 1)),
+    tests10 == 0 ~ NA_real_
+  )
+)
+
+# Performing principal component analysis
+pca <- prcomp(age_10[age_10$tests10 == 1,] %>% select(contains("dv_bas")), center = TRUE, scale. = TRUE)
+
+# Initialising derived cognitive ability score variable
+age_10$dv_bas_g <- rep(NA, nrow(age_10))
+
+# Storing PCA first component as derived cognitive ability score
+age_10[age_10$tests10 == 1,]$dv_bas_g <- -pca[["x"]][, 1]
+
+# Scaling the derived score to have mean 0 and SD 1
+age_10$dv_bas_g %<>% scale(.) %>% as.numeric(.)
+
+# Removing cognitive ability other than the derived score
+age_10 %<>% select(
+  -(contains("dv_bas") & !dv_bas_g),
+  -(i3504:i4221),
+  -tests10
+)
+```
+
+## Merging the datasets
+We can now merge the individual datasets into a single 'wide' dataset with one row per participant.
+
+```{r merge_datasets}
+# Initialising final dataset by copying over birth data
+data_clean <- age_10
+
+# Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
+for(dataset in c("age_16", "CLOSER_MH", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES")){
+  data_clean <- full_join(data_clean, get(dataset), by = "bcsid")
+}
+```
+
+```{r control_variables}
+# Combining age 10 income variables into a single variable and removing individual variables
+data_clean %<>% mutate(dv_income_10 = case_when(
+  c9_1 == 1 ~ 1,
+  c9_2 == 1 ~ 2,
+  c9_3 == 1 ~ 3,
+  c9_4 == 1 ~ 4,
+  c9_5 == 1 ~ 5,
+  c9_6 == 1 ~ 6,
+  c9_7 == 1 ~ 7
+))
+data_clean %<>% select(-contains("c9"))
+
+# Deriving maximum parental social class at age 10 and removing individual variables
+data_clean %<>% rowwise() %>% mutate(dv_sc_age_10 = min(fclrg90, c3_11))
+data_clean %<>% select(-fclrg90, -c3_11)
+
+# Deriving total Rutter score at age 10
+data_clean %<>% mutate(dv_rutter_10 = rowSums(across(m43:m61)))
+data_clean %<>% select(-(m43:m61))
+
+# Deriving total CDS score at age 10
+data_clean %<>% mutate(j178a = 48 - j178a, j178b = 48 - j178b)
+data_clean %<>% mutate(dv_cds_10 = rowSums(across(j127:j178b)))
+data_clean %<>% select(-(j127:j178b))
+```
+
+## Exporting data
+Finally, we can export the cleaned dataset for future use.
+
+```{r export_clean_data}
+write_dta(data_clean, ".\\Cleaned\\data_clean.dta")
+```
