@@ -32,9 +32,9 @@ model <- segmented(lm(y ~ x, data = simdata), psi = flat_perc, control = seg.con
 df1 <- data.frame(x = c(0, model$psi[2]), y = c(model$coefficients[1], model$coefficients[1] + model$psi[2]*model$coefficients[2]))
 df2 <- data.frame(x = c(model$psi[2], 12), y = c(model$coefficients[1] + model$psi[2]*model$coefficients[2], model$coefficients[1] + model$psi[2]*model$coefficients[2] + (12-model$psi[2])*(model$coefficients[2] + model$coefficients[3])))
 
-ggplot(mapping = aes(y = x)) +
-  geom_point(data = simdata, mapping = aes(x = y), size = 0.1, colour = "grey") +
-  geom_point(data = simdata, mapping = aes(x = yhat, colour = flat)) +
-  geom_path(data = df1, mapping = aes(x = y), colour = "blue") +
-  geom_path(data = df2, mapping = aes(x = y), colour = "blue") +
+ggplot(mapping = aes(x = x)) +
+  geom_point(data = simdata, mapping = aes(y = y), size = 0.1, colour = "grey") +
+  geom_point(data = simdata, mapping = aes(y = yhat, colour = flat)) +
+  geom_path(data = df1, mapping = aes(y = y), colour = "blue") +
+  geom_path(data = df2, mapping = aes(y = y), colour = "blue") +
   theme_classic()
