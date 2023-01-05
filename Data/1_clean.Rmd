@@ -26,15 +26,16 @@ library(magrittr)
 We can now load the raw BCS70 and CLOSER data downloaded from the UK Data Service. Data in this project are handled in Stata (.dta) format.
 
 ```{r load_data}
-# Reading DTA files containing BCS70 data from sweeps at birth, ages 5 (x3), 10, 16 (x3), 26, 30, 42 and 46
+# Reading DTA files containing BCS70 data from sweeps at birth, ages 5 (x3), 10, 16 (x4), 26, 30, 42 and 46
 # Storing the contents of each as a separate data frame
 birth <- read_dta("..\\..\\Data\\Raw\\1a_Birth_&_22_month\\UKDA-2666-stata9\\stata9\\bcs7072a.dta")
 age_5e <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699b.dta")
 age_5f <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699c.dta")
 age_5dv <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\bcs2derived.dta")
 age_10 <- read_dta("..\\..\\Data\\Raw\\3_age_10\\UKDA-3723-stata\\stata\\stata11_se\\sn3723.dta")
-age_16 <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs4derived.dta")
+age_16 <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs7016x.dta")
 age_16arith <- read_dta("..\\..\\Data\\Raw\\4a_age_16_arithmetic\\UKDA-6095-stata\\stata\\stata11\\bcs70_16-year_arithmetic_data.dta")
+age_16dv <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs4derived.dta")
 age_16school <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs70_age16_school_type.dta")
 age_26 <- read_dta("..\\..\\Data\\Raw\\5_age_26\\UKDA-3833-stata\\stata\\stata11\\bcs96x.dta")
 age_30 <- read_dta("..\\..\\Data\\Raw\\6_age_30\\UKDA-5558-stata\\stata\\stata11_se\\bcs2000.dta")
@@ -52,136 +53,166 @@ CLOSER_SES <- read_dta("..\\..\\Data\\Raw\\CLOSER_socioeconomic_measures\\UKDA-8
 response <- read_dta("..\\..\\Data\\Raw\\Response_dataset\\UKDA-5641-stata\\stata\\stata13\\bcs70_response_1970-2016.dta")
 ```
 
+## Selecting relevant variables
+We now select the variables relevant to our analyses (see study protocol), discarding the unnecessary data.
+
 ```{r select_vars}
+# Birth sweep data
 birth %<>% select(
-  bcsid,
-  a0014, #* 
-  a0018, #*
-  a0230, #*
-  a0255 #*
+  bcsid, # BCS70 serial number
+  a0014, # Social class of father in 1970* 
+  a0018, # Mother's social class in 1970*
+  a0230, # Occurrence of genital tract bleeding*
+  a0255 # Sex of the baby*
 )
 
+# Age 5 sweep data (E)
 age_5e %<>% select(
-  bcsid,
-  e192 #*
+  bcsid, # BCS70 serial number
+  e192 # Age father left school*
 )
 
+# Age 5 sweep data (F)
 age_5f %<>% select(
-  bcsid,
-  f100, #*
-  f118, #*
-  f121, #*
-  f122 #*
+  bcsid, # BCS70 serial number
+  f100, # Schonell Reading Test score*
+  f118, # Complete a Profile Test score*
+  f121, # Standardised Human Figure Drawing score*
+  f122 # Standardised Copying Designs score*
 )
 
+# Renaming "BCSID" to "bcsid" in age_5dv for consistency
 age_5dv %<>% rename(bcsid = BCSID)
 
+# Age 5 derived variables
 age_5dv %<>% select(
-  bcsid,
-  BD2READ #*
+  bcsid, # BCS70 serial number
+  BD2READ # Standardised English Picture Vocabulary Test score*
 )
 
+# Age 10 sweep data
 age_10 %<>% select(
-  bcsid,
-  c3_11,
-  c9_1:c9_7,
+  bcsid, # BCS70 serial number
+  c3_11, # Mother's corrected social class
+  c9_1:c9_7, # Total family income
   i3504:i3540, # BAS word definitions
   i3541:i3574, # BAS recall of digits
   i3617:i3644, # BAS matrices
   i4201:i4221, # BAS word similarities (derived)
   m43:m61, # Rutter scale
-  m84:m101, #*
+  m84:m101, # Positive activities outside school*
   j127:j178b, # Child Development Scale
-  tests10
+  tests10 # Maths test, reading test, BAS test completed
 )
 
-age_16 %<>% rename(bcsid = BCSID)
-
+# Age 16 sweep data
 age_16 %<>% select(
-  bcsid,
+  bcsid, # BCS70 serial number
+  contains("hd5_"), # Alcohol in last 7 days*
+  contains("oe1_"), # Sources of income*
+  rd6m_1 # Behavioural or emotional problems*
+)
+
+# Age 16 arithmetic test data
+age_16arith %<>% select(
+  bcsid, # BCS70 serial number
+  mathscore # Arithmetic test score*
+)
+
+# Renaming "BCSID" to "bcsid" in age_16dv for consistency
+age_16dv %<>% rename(bcsid = BCSID)
+
+# Age 16 derived variables
+age_16dv %<>% select(
+  bcsid, # BCS70 serial number
   BD4MAL, # Total Malaise score
   BD4RUTT # Total Rutter behaviour score
-  contains("hd5_"), #*
-  contains("oe1_"), #*
-  rd6m_1 #*
 )
 
-age_16arith %<>% rename(bcsid = BCSID)
-
-age_16arith %<>% select(
-  bcsid,
-  mathscore #*
-)
-
+# Renaming "BCSID" to "bcsid" in age_16school for consistency
 age_16school %<>% rename(bcsid = BCSID)
 
+# Age 26 sweep data
 age_26 %<>% select(
-  bcsid,
-  b960540 #*
+  bcsid, # BCS70 serial number
+  b960540 # Accidents and assaults*
 )
 
+# Age 30 sweep data
 age_30 %<>% select(
-  bcsid,
-  aptrain, #*
-  emosup, #*
-  numadmn, #*
-  wrktrain, #*
-  vote97 #*
+  bcsid, # BCS70 serial number
+  aptrain, # Apprenticeships*
+  emosup, # People for advice/support*
+  numadmn, # Hospital admissions*
+  wrktrain, # Work-related training*
+  vote97 # Voted in 1997 General Election*
 )
 
+# Renaming "BCSID" to "bcsid" in age_42 for consistency
 age_42 %<>% rename(bcsid = BCSID)
 
+# Age 42 sweep data
 age_42 %<>% select(
-  bcsid,
-  B9DIVCHK, B9HMS, B9MARCHK, #*
-  contains("B9SCQ8"), #*
-  B9SCQ17, #*
-  B9SCQ19, #*
-  B9TEN #*
+  bcsid, # BCS70 serial number
+  B9DIVCHK, B9HMS, B9MARCHK, # Marital status*
+  contains("B9SCQ8"), # Organisational membership*
+  B9SCQ17, # Computer ownership*
+  B9SCQ19, # Number of cars or vans owned*
+  B9TEN # Housing tenure*
 )
 
+# Renaming "BCSID" to "bcsid" in age_46 for consistency
 age_46 %<>% rename(bcsid = BCSID)
 
+# Age 46 sweep data
 age_46 %<>% select(
-  bcsid,
-  BD10MAL,
-  contains("B10MHPRB"),
-  BD10WEMWB
+  bcsid, # BCS70 serial number
+  BD10MAL, # Total Malaise score
+  contains("B10MHPRB"), # Seen Dr/specialist for mental health problems
+  BD10WEMWB # Warwick Edinburgh Mental Well-Being Scale
 )
 
+# CLOSER WP9 data
 CLOSER_env %<>% select(
-  bcsid,
-  tenure,
-  prmnh,
-  intbcsz,
-  extbcsz
+  bcsid, # BCS70 serial number
+  tenure, # Accommodation owned or rented in childhood
+  prmnh, # Poor maternal / familial mental health
+  intbcsz, # Internalising behaviour in childhood, standardised
+  extbcsz # Externalising behaviour in childhood, standardised
 )
 
+# CLOSER WP20 data
 CLOSER_MH %<>% select(
-  -closerid,
-  -stid
+  -closerid, -stid # Selecting all variables except CLOSER and study identifiers
 )
 
 # Restricting CLOSER WP1 data to those collected at age 10 only
 CLOSER_BMI <- CLOSER_BMI[CLOSER_BMI$visitage == 10,]
 
+# CLOSER WP1 data
 CLOSER_BMI %<>% select(
-  bcsid,
-  bmi
+  bcsid, # BCS70 serial number
+  bmi # Body mass index
 )
 
+# CLOSER WP2 data
 CLOSER_SES %<>% select(
-  bcsid,
-  fclrg90
+  bcsid, # BCS70 serial number
+  fclrg90 # Father's social class (RG 1990 version) at age 10 sweep
 )
 
+# Renaming "BCSID" to "bcsid" in response for consistency
 response %<>% rename(bcsid = BCSID)
 
+# Response dataset
 response %<>% select(
-  bcsid,
-  contains("OUTCME")
+  bcsid, # BCS70 serial number
+  contains("OUTCME") # Outcome variables
 )
 ```
+
+## Defining NAs
+In order to allow correct data analysis, we define data points which are not available as NA. Mostly these are negative values from the source datasets, but there are some exceptions.
 
 ```{r define_na}
 # Birth dataset: negative values become NA
@@ -208,6 +239,9 @@ is.na(age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))]) <- age_1
 
 # Age 16 dataset: negative values become NA
 is.na(age_16[,]) <- age_16[,] < 0
+
+# Age 16 derived variables dataset: negative values become NA
+is.na(age_16dv[,]) <- age_16dv[,] < 0
 
 # Age 16 school type dataset: negative values become NA
 is.na(age_16school[,]) <- age_16school[,] < 0
@@ -236,6 +270,9 @@ is.na(CLOSER_env[c("prmnh", "tenure")]) <- CLOSER_env[c("prmnh", "tenure")] < 0
 # CLOSER childhood environment dataset (internalising/externalising behaviour): values less than -100 become NA
 is.na(CLOSER_env[c("intbcsz", "extbcsz")]) <- CLOSER_env[c("intbcsz", "extbcsz")] < -100
 ```
+
+## Cognitive ability - principal component analysis
+In order to use cognitive ability as an exposure/confounder in our study, we need to convert the raw cognitive test scores into a univariate measure of cognitive ability. We do this by performing a principal component analysis (PCA), with the first component being the cognitive ability measure used in the study. This is performed at both age 5 and age 10.
 
 ```{r cognitive_ability_pca}
 ## Age 5
@@ -319,10 +356,13 @@ We can now merge the individual datasets into a single 'wide' dataset with one r
 data_clean <- birth
 
 # Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
-for(dataset in c("age_5e", "age_5f", "age_10", "age_16", "age_16arith", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_MH", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response")){
+for(dataset in c("age_5e", "age_5f", "age_10", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_MH", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response")){
   data_clean <- full_join(data_clean, get(dataset), by = "bcsid")
 }
 ```
+
+## Deriving control variables
+To make the data useful, we produce a number of derived variables which are more informative than the raw source data.
 
 ```{r control_variables}
 # Deriving maximum parental social class at birth and removing mother variable
