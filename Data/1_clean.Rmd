@@ -84,7 +84,8 @@ age_5d %<>% select(
 age_5e %<>% select(
   bcsid, # BCS70 serial number
   e067:e076, # Medical conditions
-  e192, # Age father left school*
+  e191, # Age mother left school
+  e192, # Age father left school
   e197, # Father's social class
   e206, # Mother's social class
   e216a, # Mother's regular job since child's birth
@@ -93,10 +94,10 @@ age_5e %<>% select(
 # Age 5 sweep data (F)
 age_5f %<>% select(
   bcsid, # BCS70 serial number
-  f100, # Schonell Reading Test score*
-  f118, # Complete a Profile Test score*
-  f121, # Standardised Human Figure Drawing score*
-  f122 # Standardised Copying Designs score*
+  f100, # Schonell Reading Test score
+  f118, # Complete a Profile Test score
+  f121, # Standardised Human Figure Drawing score
+  f122 # Standardised Copying Designs score
 )
 
 # Renaming "BCSID" to "bcsid" in age_5dv for consistency
@@ -105,7 +106,7 @@ age_5dv %<>% rename(bcsid = BCSID)
 # Age 5 derived variables
 age_5dv %<>% select(
   bcsid, # BCS70 serial number
-  BD2READ # Standardised English Picture Vocabulary Test score*
+  BD2READ # Standardised English Picture Vocabulary Test score
 )
 
 # Age 10 sweep data
