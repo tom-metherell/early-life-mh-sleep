@@ -5,9 +5,16 @@ date: "2022-12-06"
 output: html_document
 ---
 
+Script in series: "Associations between early life mental health indicators and sleep in adulthood"
+
+This script cleans and pre-processes main survey data from the 1970 British Cohort Study, along with selected CLOSER harmonisation work packages, for use in further analysis.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+## Dependencies
+We start by loading the necessary dependencies.
 
 ```{r dependencies}
 library(haven)
@@ -15,7 +22,12 @@ library(tidyverse)
 library(magrittr)
 ```
 
+## Loading data
+We can now load the raw BCS70 and CLOSER data downloaded from the UK Data Service. Data in this project are handled in Stata (.dta) format.
+
 ```{r load_data}
+# Reading DTA files containing BCS70 data from sweeps at birth, ages 5 (x3), 10, 16 (x3), 26, 30, 42 and 46
+# Storing the contents of each as a separate data frame
 birth <- read_dta("..\\..\\Data\\Raw\\1a_Birth_&_22_month\\UKDA-2666-stata9\\stata9\\bcs7072a.dta")
 age_5e <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699b.dta")
 age_5f <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699c.dta")
@@ -28,10 +40,15 @@ age_26 <- read_dta("..\\..\\Data\\Raw\\5_age_26\\UKDA-3833-stata\\stata\\stata11
 age_30 <- read_dta("..\\..\\Data\\Raw\\6_age_30\\UKDA-5558-stata\\stata\\stata11_se\\bcs2000.dta")
 age_42 <- read_dta("..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_flatfile.dta")
 age_46 <- read_dta("..\\..\\Data\\Raw\\10_age_46\\UKDA-8547-stata\\stata\\stata11\\bcs_age46_main.dta")
+
+# Reading DTA files containing data from CLOSER WPs 1, 2, 9 and 20
+# Storing the contents of each as a separate data frame
 CLOSER_MH <- read_dta("..\\..\\Data\\Raw\\CLOSER_age_10_mental_health\\UKDA-8882-stata\\stata\\stata13\\bcs70_closer_wp20.dta")
 CLOSER_env <- read_dta("..\\..\\Data\\Raw\\CLOSER_childhood_environment_adult_wellbeing\\UKDA-8553-stata\\stata\\stata13\\bcs70_closer_wp9.dta")
 CLOSER_BMI <- read_dta("..\\..\\Data\\Raw\\CLOSER_height_weight_BMI\\UKDA-8551-stata\\stata\\stata13\\bcs70_closer_wp1.dta")
 CLOSER_SES <- read_dta("..\\..\\Data\\Raw\\CLOSER_socioeconomic_measures\\UKDA-8305-stata\\stata\\stata13\\bcs70_closer_wp2ses.dta")
+
+# Reading DTA file of response dataset and storing the contents as a data frame
 response <- read_dta("..\\..\\Data\\Raw\\Response_dataset\\UKDA-5641-stata\\stata\\stata13\\bcs70_response_1970-2016.dta")
 ```
 
