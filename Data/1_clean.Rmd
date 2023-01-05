@@ -76,7 +76,7 @@ birth %<>% select(
 # Age 5 sweep data (D)
 age_5d %<>% select(
   bcsid, # BCS70 serial number
-  d016, # Bedwetting
+  d016a, # Bedwetting
   d119 # Rutter score
 )
 
