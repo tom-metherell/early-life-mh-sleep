@@ -16,15 +16,54 @@ library(magrittr)
 ```
 
 ```{r load_data}
+birth <- read_dta("..\\..\\Data\\Raw\\1a_Birth_&_22_month\\UKDA-2666-stata9\\stata9\\bcs7072a.dta")
+age_5e <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699b.dta")
+age_5f <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699c.dta")
+age_5dv <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\bcs2derived.dta")
 age_10 <- read_dta("..\\..\\Data\\Raw\\3_age_10\\UKDA-3723-stata\\stata\\stata11_se\\sn3723.dta")
 age_16 <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs4derived.dta")
+age_16arith <- read_dta("..\\..\\Data\\Raw\\4a_age_16_arithmetic\\UKDA-6095-stata\\stata\\stata11\\bcs70_16-year_arithmetic_data.dta")
+age_16school <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs70_age16_school_type.dta")
+age_26 <- read_dta("..\\..\\Data\\Raw\\5_age_26\\UKDA-3833-stata\\stata\\stata11\\bcs96x.dta")
+age_30 <- read_dta("..\\..\\Data\\Raw\\6_age_30\\UKDA-5558-stata\\stata\\stata11_se\\bcs2000.dta")
+age_42 <- read_dta("..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_flatfile.dta")
+age_46 <- read_dta("..\\..\\Data\\Raw\\10_age_46\\UKDA-8547-stata\\stata\\stata11\\bcs_age46_main.dta")
 CLOSER_MH <- read_dta("..\\..\\Data\\Raw\\CLOSER_age_10_mental_health\\UKDA-8882-stata\\stata\\stata13\\bcs70_closer_wp20.dta")
 CLOSER_env <- read_dta("..\\..\\Data\\Raw\\CLOSER_childhood_environment_adult_wellbeing\\UKDA-8553-stata\\stata\\stata13\\bcs70_closer_wp9.dta")
 CLOSER_BMI <- read_dta("..\\..\\Data\\Raw\\CLOSER_height_weight_BMI\\UKDA-8551-stata\\stata\\stata13\\bcs70_closer_wp1.dta")
 CLOSER_SES <- read_dta("..\\..\\Data\\Raw\\CLOSER_socioeconomic_measures\\UKDA-8305-stata\\stata\\stata13\\bcs70_closer_wp2ses.dta")
+response <- read_dta("..\\..\\Data\\Raw\\Response_dataset\\UKDA-5641-stata\\stata\\stata13\\bcs70_response_1970-2016.dta")
 ```
 
 ```{r select_vars}
+birth %<>% select(
+  bcsid,
+  a0014, #* 
+  a0018, #*
+  a0230, #*
+  a0255 #*
+)
+
+age_5e %<>% select(
+  bcsid,
+  e192 #*
+)
+
+age_5f %<>% select(
+  bcsid,
+  f100, #*
+  f118, #*
+  f121, #*
+  f122 #*
+)
+
+age_5dv %<>% rename(bcsid = BCSID)
+
+age_5dv %<>% select(
+  bcsid,
+  BD2READ #*
+)
+
 age_10 %<>% select(
   bcsid,
   c3_11,
@@ -33,18 +72,65 @@ age_10 %<>% select(
   i3541:i3574, # BAS recall of digits
   i3617:i3644, # BAS matrices
   i4201:i4221, # BAS word similarities (derived)
-  tests10,
   m43:m61, # Rutter scale
-  j127:j178b # Child Development Scale
-)
-
-age_16 %<>% select(
-  BCSID,
-  BD4MAL, # Total Malaise score
-  BD4RUTT # Total Rutter behaviour score
+  m84:m101, #*
+  j127:j178b, # Child Development Scale
+  tests10
 )
 
 age_16 %<>% rename(bcsid = BCSID)
+
+age_16 %<>% select(
+  bcsid,
+  BD4MAL, # Total Malaise score
+  BD4RUTT # Total Rutter behaviour score
+  contains("hd5_"), #*
+  contains("oe1_"), #*
+  rd6m_1 #*
+)
+
+age_16arith %<>% rename(bcsid = BCSID)
+
+age_16arith %<>% select(
+  bcsid,
+  mathscore #*
+)
+
+age_16school %<>% rename(bcsid = BCSID)
+
+age_26 %<>% select(
+  bcsid,
+  b960540 #*
+)
+
+age_30 %<>% select(
+  bcsid,
+  aptrain, #*
+  emosup, #*
+  numadmn, #*
+  wrktrain, #*
+  vote97 #*
+)
+
+age_42 %<>% rename(bcsid = BCSID)
+
+age_42 %<>% select(
+  bcsid,
+  B9DIVCHK, B9HMS, B9MARCHK, #*
+  contains("B9SCQ8"), #*
+  B9SCQ17, #*
+  B9SCQ19, #*
+  B9TEN #*
+)
+
+age_46 %<>% rename(bcsid = BCSID)
+
+age_46 %<>% select(
+  bcsid,
+  BD10MAL,
+  contains("B10MHPRB"),
+  BD10WEMWB
+)
 
 CLOSER_env %<>% select(
   bcsid,
@@ -70,6 +156,13 @@ CLOSER_BMI %<>% select(
 CLOSER_SES %<>% select(
   bcsid,
   fclrg90
+)
+
+response %<>% rename(bcsid = BCSID)
+
+response %<>% select(
+  bcsid,
+  contains("OUTCME")
 )
 ```
 
