@@ -26,13 +26,15 @@ library(magrittr)
 We can now load the raw BCS70 and CLOSER data downloaded from the UK Data Service. Data in this project are handled in Stata (.dta) format.
 
 ```{r load_data}
-# Reading DTA files containing BCS70 data from sweeps at birth, ages 5 (x3), 10, 16 (x4), 26, 30, 42 and 46
+# Reading DTA files containing BCS70 data from sweeps at birth, ages 5 (x3), 10 (x2), 16 (x4), 26, 30, 42 and 46
 # Storing the contents of each as a separate data frame
 birth <- read_dta("..\\..\\Data\\Raw\\1a_Birth_&_22_month\\UKDA-2666-stata9\\stata9\\bcs7072a.dta")
+age_5d <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699a.dta")
 age_5e <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699b.dta")
 age_5f <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\f699c.dta")
 age_5dv <- read_dta("..\\..\\Data\\Raw\\2_age_5\\UKDA-2699-stata\\stata\\stata11\\bcs2derived.dta")
 age_10 <- read_dta("..\\..\\Data\\Raw\\3_age_10\\UKDA-3723-stata\\stata\\stata11_se\\sn3723.dta")
+age_10dv <- read_dta("..\\..\\Data\\Raw\\3_age_10\\UKDA-3723-stata\\stata\\stata11_se\\bcs3derived.dta")
 age_16 <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs7016x.dta")
 age_16arith <- read_dta("..\\..\\Data\\Raw\\4a_age_16_arithmetic\\UKDA-6095-stata\\stata\\stata11\\bcs70_16-year_arithmetic_data.dta")
 age_16dv <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\stata13_se\\bcs4derived.dta")
@@ -42,9 +44,8 @@ age_30 <- read_dta("..\\..\\Data\\Raw\\6_age_30\\UKDA-5558-stata\\stata\\stata11
 age_42 <- read_dta("..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_flatfile.dta")
 age_46 <- read_dta("..\\..\\Data\\Raw\\10_age_46\\UKDA-8547-stata\\stata\\stata11\\bcs_age46_main.dta")
 
-# Reading DTA files containing data from CLOSER WPs 1, 2, 9 and 20
+# Reading DTA files containing data from CLOSER WPs 1, 2 and 9
 # Storing the contents of each as a separate data frame
-CLOSER_MH <- read_dta("..\\..\\Data\\Raw\\CLOSER_age_10_mental_health\\UKDA-8882-stata\\stata\\stata13\\bcs70_closer_wp20.dta")
 CLOSER_env <- read_dta("..\\..\\Data\\Raw\\CLOSER_childhood_environment_adult_wellbeing\\UKDA-8553-stata\\stata\\stata13\\bcs70_closer_wp9.dta")
 CLOSER_BMI <- read_dta("..\\..\\Data\\Raw\\CLOSER_height_weight_BMI\\UKDA-8551-stata\\stata\\stata13\\bcs70_closer_wp1.dta")
 CLOSER_SES <- read_dta("..\\..\\Data\\Raw\\CLOSER_socioeconomic_measures\\UKDA-8305-stata\\stata\\stata13\\bcs70_closer_wp2ses.dta")
@@ -60,16 +61,33 @@ We now select the variables relevant to our analyses (see study protocol), disca
 # Birth sweep data
 birth %<>% select(
   bcsid, # BCS70 serial number
-  a0014, # Social class of father in 1970* 
-  a0018, # Mother's social class in 1970*
+  a0005a, # Maternal age at birth
+  a0009, # Mother's age at completion of education
+  a0010, # Father's age at completion of education
+  a0014, # Social class of father in 1970
+  a0018, # Mother's social class in 1970
+  a0043b, # Smoking during pregnancy
+  a0195a, # Gestational age in days
   a0230, # Occurrence of genital tract bleeding*
-  a0255 # Sex of the baby*
+  a0255, # Sex of the baby*
+  a0278 # Birthweight
+)
+
+# Age 5 sweep data (D)
+age_5d %<>% select(
+  bcsid, # BCS70 serial number
+  d016, # Bedwetting
+  d119 # Rutter score
 )
 
 # Age 5 sweep data (E)
 age_5e %<>% select(
   bcsid, # BCS70 serial number
-  e192 # Age father left school*
+  e067:e076, # Medical conditions
+  e192, # Age father left school*
+  e197, # Father's social class
+  e206, # Mother's social class
+  e216a, # Mother's regular job since child's birth
 )
 
 # Age 5 sweep data (F)
@@ -99,10 +117,19 @@ age_10 %<>% select(
   i3541:i3574, # BAS recall of digits
   i3617:i3644, # BAS matrices
   i4201:i4221, # BAS word similarities (derived)
-  m43:m61, # Rutter scale
-  m84:m101, # Positive activities outside school*
   j127:j178b, # Child Development Scale
+  m84:m101, # Positive activities outside school*
+  meb4_1, meb4_6, meb4_16, meb4_21, meb4_26, meb4_46, meb4_51, # Medical conditions
   tests10 # Maths test, reading test, BAS test completed
+)
+
+# Renaming "BCSID" to "bcsid" in age_10dv for consistency
+age_10dv %<>% rename(bcsid = BCSID)
+
+# Age 10 derived variables
+age_10dv %<>% select(
+  bcsid, # BCS70 serial number
+  BD3MRUTT # Rutter score
 )
 
 # Age 16 sweep data
@@ -110,7 +137,9 @@ age_16 %<>% select(
   bcsid, # BCS70 serial number
   contains("hd5_"), # Alcohol in last 7 days*
   contains("oe1_"), # Sources of income*
-  rd6m_1 # Behavioural or emotional problems*
+  rd6m_1, # Behavioural or emotional problems
+  t11_2, # Father's social class
+  t11_9 # Mother's social class
 )
 
 # Age 16 arithmetic test data
@@ -175,15 +204,16 @@ age_46 %<>% select(
 # CLOSER WP9 data
 CLOSER_env %<>% select(
   bcsid, # BCS70 serial number
-  tenure, # Accommodation owned or rented in childhood
-  prmnh, # Poor maternal / familial mental health
+  ameni, # Lacking sole use of amenities
+  brfed, # Whether breastfed
+  crowd, # Crowding in childhood
+  divorce, # Parents divorced during study member's childhood
+  extbcsz, # Externalising behaviour in childhood, standardised
   intbcsz, # Internalising behaviour in childhood, standardised
-  extbcsz # Externalising behaviour in childhood, standardised
-)
-
-# CLOSER WP20 data
-CLOSER_MH %<>% select(
-  -closerid, -stid # Selecting all variables except CLOSER and study identifiers
+  prmnh, # Poor maternal / familial mental health
+  resmove, # Number of residential moves in childhood
+  sepmumbcs, # Ever separated from mother
+  tenure # Accommodation owned or rented in childhood
 )
 
 # Restricting CLOSER WP1 data to those collected at age 10 only
@@ -218,7 +248,8 @@ In order to allow correct data analysis, we define data points which are not ava
 # Birth dataset: negative values become NA
 is.na(birth[,]) <- birth[,] < 0
 
-# Age 5 dataset (E): negative values become NA
+# Age 5 datasets (D & E): negative values become NA
+is.na(age_5d[,]) <- age_5d[,] < 0
 is.na(age_5e[,]) <- age_5e[,] < 0
 
 # Age 5 dataset (F, reading & profile tests): negative values become NA
@@ -234,10 +265,12 @@ is.na(age_5dv[,]) <- age_5dv[,] == -1
 is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] < 0
 is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] > 7
 
-# Age 10 dataset (Rutter scale, CDS, positive activities): negative values become NA
+# Age 10 dataset (CDS, positive activities): negative values become NA
 is.na(age_10[, grep("j127", names(age_10)):grep("j178b", names(age_10))]) <- age_10[, grep("j127", names(age_10)):grep("j178b", names(age_10))] < 0
-is.na(age_10[, grep("m43", names(age_10)):grep("m61", names(age_10))]) <- age_10[, grep("m43", names(age_10)):grep("m61", names(age_10))] < 0
 is.na(age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))]) <- age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))] < 0
+
+# Age 10 derived variables dataset: negative values become NA
+is.na(age_10dv[,]) <- age_10dv[,] < 0
 
 # Age 16 dataset: negative values become NA
 is.na(age_16[,]) <- age_16[,] < 0
@@ -358,13 +391,23 @@ We can now merge the individual datasets into a single 'wide' dataset with one r
 data_clean <- birth
 
 # Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
-for(dataset in c("age_5e", "age_5f", "age_10", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_MH", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response")){
+for(dataset in c("age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response")){
   data_clean <- full_join(data_clean, get(dataset), by = "bcsid")
 }
 ```
 
+## Deriving exposure variables
+To make the data useful, we produce a number of derived variables which are more informative than the raw source data. This applies to both the exposures...
+
+```{r exposure_variables}
+# Deriving total CDS score at age 10
+data_clean %<>% mutate(j178a = 48 - j178a, j178b = 48 - j178b)
+data_clean %<>% mutate(dv_cds_10 = rowSums(across(j127:j178b)))
+data_clean %<>% select(-(j127:j178b))
+```
+
 ## Deriving control variables
-To make the data useful, we produce a number of derived variables which are more informative than the raw source data.
+... and the controls.
 
 ```{r control_variables}
 # Deriving maximum parental social class at birth and removing mother variable
@@ -374,6 +417,10 @@ data_clean %<>% select(-a0018)
 # Recoding "other"/"unsupported" values as missing in a0014 for use as an auxiliary variable
 is.na(data_clean[c("a0014")]) <- data_clean[c("a0014")] > 6
 
+# Deriving maximum parental education at age 5 and removing mother variable
+data_clean %<>% rowwise() %>% mutate(dv_par_edu_5 = max(e191, e192))
+data_clean %<>% select(-e191)
+
 # Recoding father's education as a binary factor variable for use as an auxiliary variable
 data_clean %<>% mutate(dv_father_schl = case_when(
   e192 >= 16 ~ 1,
@@ -381,6 +428,24 @@ data_clean %<>% mutate(dv_father_schl = case_when(
 ))
 data_clean$dv_father_schl %<>% factor(.)
 data_clean %<>% select(-e192)
+
+# Deriving maximum parental social class at age 5 and removing individual variables
+data_clean %<>% rowwise() %>% mutate(dv_sc_age_5 = min(e197, e206))
+data_clean %<>% select(e197, e206)
+
+# Combining age 5 medical condition variables into a single binary variable and removing individual variables
+data_clean %<>% mutate(dv_med_5 = case_when(
+  if_any(e067:e076, ~. == 1) ~ 1,
+  if_all(e067:e076, ~. != 1) ~ 0
+))
+data_clean$dv_med_5 %<>% factor(.)
+data_clean %<>% select(-(e067:e076))
+
+# Combining age 10 medical condition variables into a single binary variable and removing individual variables
+data_clean %<>% mutate(dv_med_10 = case_when(
+  if_any(meb4_1:meb4_51, ~. == 1) ~ "Yes"
+))
+data_clean %<>% select(-(meb4_1:meb4_51))
 
 # Combining age 10 income variables into a single variable and removing individual variables
 data_clean %<>% mutate(dv_income_10 = case_when(
@@ -394,9 +459,9 @@ data_clean %<>% mutate(dv_income_10 = case_when(
 ))
 data_clean %<>% select(-contains("c9"))
 
-# Deriving maximum parental social class at age 10 and removing individual variables
-data_clean %<>% rowwise() %>% mutate(dv_sc_age_10 = min(fclrg90, c3_11))
-data_clean %<>% select(-fclrg90, -c3_11)
+# Deriving maximum parental social class at age 16 and removing individual variables
+data_clean %<>% rowwise() %>% mutate(dv_sc_age_16 = min(t11_2, t11_9))
+data_clean %<>% select(-t11_2, -t11_9)
 
 # Combining age 16 income source variables into a single variable (employment & investments vs other) and removing individual variables
 data_clean %<>% mutate(dv_incsource = case_when(
@@ -462,15 +527,6 @@ data_clean %<>% mutate(B9TEN = case_when(
   B9TEN %in% c(1, 2) ~ "Owned",
   B9TEN %in% c(3, 4, 5, 7) ~ "Not owned"
 ))
-
-# Deriving total Rutter score at age 10
-data_clean %<>% mutate(dv_rutter_10 = rowSums(across(m43:m61)))
-data_clean %<>% select(-(m43:m61))
-
-# Deriving total CDS score at age 10
-data_clean %<>% mutate(j178a = 48 - j178a, j178b = 48 - j178b)
-data_clean %<>% mutate(dv_cds_10 = rowSums(across(j127:j178b)))
-data_clean %<>% select(-(j127:j178b))
 ```
 
 ## Exporting data
