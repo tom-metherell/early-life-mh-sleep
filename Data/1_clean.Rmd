@@ -167,12 +167,48 @@ response %<>% select(
 ```
 
 ```{r define_na}
+# Birth dataset: negative values become NA
+is.na(birth[,]) <- birth[,] < 0
+
+# Age 5 dataset (E): negative values become NA
+is.na(age_5e[,]) <- age_5e[,] < 0
+
+# Age 5 dataset (F, reading & profile tests): negative values become NA
+is.na(age_5f[c("f100", "f118")]) <- age_5f[c("f100", "f118")] < 0
+
+# Age 5 dataset (F, HFD & copying designs tests): -5 becomes NA
+is.na(age_5f[c("f121", "f122")]) <- age_5f[c("f121", "f122")] == -5
+
+# Age 5 dataset (derived): -1 becomes NA
+is.na(age_5dv[,]) <- age_5dv[,] == -1
+
 # Age 10 dataset (mother's social class only): negative values and values more than 7 become NA
 is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] < 0
 is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] > 7
 
+# Age 10 dataset (positive activities): negative values become NA
+is.na(age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))]) <- age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))] < 0
+
 # Age 16 dataset: negative values become NA
 is.na(age_16[,]) <- age_16[,] < 0
+
+# Age 16 school type dataset: negative values become NA
+is.na(age_16school[,]) <- age_16school[,] < 0
+
+# Age 26 dataset: negative values become NA
+is.na(age_26[,]) <- age_26[,] < 0
+
+# Age 30 dataset (hospital admissions only): 99 becomes NA
+is.na(age_30[, "numadmn"]) <- age_30[, "numadmn"] == 99
+
+# Age 30 dataset (all other variables): values above 7 become NA
+is.na(age_30[c("aptrain", "wrktrain", "emosup", "vote97")]) <- age_30[c("aptrain", "wrktrain", "emosup", "vote97")] > 7
+
+# Age 42 dataset: negative values become NA
+is.na(age_42[,]) <- age_42[,] < 0
+
+# Age 46 dataset: negative values become NA
+is.na(age_46[,]) <- age_46[,] < 0
 
 # CLOSER SES dataset: negative values become NA
 is.na(CLOSER_SES[,]) <- CLOSER_SES[,] < 0
@@ -185,6 +221,31 @@ is.na(CLOSER_env[c("intbcsz", "extbcsz")]) <- CLOSER_env[c("intbcsz", "extbcsz")
 ```
 
 ```{r cognitive_ability_pca}
+## Age 5
+# Joining derived dataset (containing BD2READ) into dataset F and deleting the former
+age_5f %<>% full_join(., age_5dv, by = "bcsid")
+rm(age_5dv)
+
+# Detecting missing values in rows
+missing <- rowSums(is.na(age_5f)) != 0
+age_5f <- data.frame(age_5f, missing)
+
+# Performing principal component analysis
+pca <- prcomp(age_5f[age_5f$missing == FALSE, c("BD2READ", "f100", "f118", "f121", "f122")], center = TRUE, scale. = TRUE)
+
+# Initialising derived cognitive ability score variable
+age_5f$dv_cog_abil_5 <- rep(NA, nrow(age_5f))
+
+# Storing PCA first component as derived cognitive ability score
+age_5f[age_5f$missing == FALSE,]$dv_cog_abil_5 <- pca[["x"]][, 1]
+
+# Scaling the derived score to have mean 0 and SD 1
+age_5f$dv_cog_abil_5 %<>% scale(.) %>% as.numeric(.)
+
+# Removing cognitive ability other than the derived score
+age_5f %<>% select(-BD2READ, -f100, -f118, -f121, -f122, -missing)
+
+## Age 10
 # Summing scores from the four BAS tests conducted, or reporting NA if the BAS were not completed
 age_10 %<>% mutate(
   
@@ -238,15 +299,30 @@ We can now merge the individual datasets into a single 'wide' dataset with one r
 
 ```{r merge_datasets}
 # Initialising final dataset by copying over birth data
-data_clean <- age_10
+data_clean <- birth
 
 # Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
-for(dataset in c("age_16", "CLOSER_MH", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES")){
+for(dataset in c("age_5e", "age_5f", "age_10", "age_16", "age_16arith", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_MH", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response")){
   data_clean <- full_join(data_clean, get(dataset), by = "bcsid")
 }
 ```
 
 ```{r control_variables}
+# Deriving maximum parental social class at birth and removing mother variable
+data_clean %<>% rowwise() %>% mutate(dv_sc_birth = min(a0014, a0018))
+data_clean %<>% select(-a0018)
+
+# Recoding "other"/"unsupported" values as missing in a0014 for use as an auxiliary variable
+is.na(data_clean[c("a0014")]) <- data_clean[c("a0014")] > 6
+
+# Recoding father's education as a binary factor variable for use as an auxiliary variable
+data_clean %<>% mutate(dv_father_schl = case_when(
+  e192 >= 16 ~ 1,
+  e192 < 15 ~ 0
+))
+data_clean$dv_father_schl %<>% factor(.)
+data_clean %<>% select(-e192)
+
 # Combining age 10 income variables into a single variable and removing individual variables
 data_clean %<>% mutate(dv_income_10 = case_when(
   c9_1 == 1 ~ 1,
@@ -262,6 +338,71 @@ data_clean %<>% select(-contains("c9"))
 # Deriving maximum parental social class at age 10 and removing individual variables
 data_clean %<>% rowwise() %>% mutate(dv_sc_age_10 = min(fclrg90, c3_11))
 data_clean %<>% select(-fclrg90, -c3_11)
+
+# Combining age 16 income source variables into a single variable (employment & investments vs other) and removing individual variables
+data_clean %<>% mutate(dv_incsource = case_when(
+  if_any(oe1_1:oe1_5, ~. == 1) ~ 1,
+  if_all(oe1_1:oe1_5, ~. == 2) & if_any(oe1_6:oe1_19, ~. == 1) ~ 2
+))
+data_clean$dv_incsource %<>% factor(.)
+data_clean %<>% select(-contains("oe1_"))
+
+# Combining positive activities outside school into a single variable and removing individual variables
+data_clean %<>% mutate(dv_pos_act = rowSums(across(m84:m101)))
+data_clean %<>% select(-(m84:m101))
+
+# Combining alcohol consumption in the last week into a single variable and removing individual variables
+data_clean %<>% mutate(dv_alcohol = case_when(
+  if_any(hd5_1:hd5_7, ~. == 1) ~ 1,
+  hd5_8 == 1 ~ 0
+))
+data_clean$dv_alcohol %<>% factor(.)
+data_clean %<>% select(-contains("hd5_"))
+
+# Combining apprenticeships and work-related training into a single variable and removing individual variables
+data_clean %<>% mutate(dv_training = case_when(
+  if_any(c("aptrain", "wrktrain"), ~. == 1) ~ 1,
+  if_all(c("aptrain", "wrktrain"), ~. == 2) ~ 0
+))
+data_clean$dv_training %<>% factor(.)
+data_clean %<>% select(-aptrain, -wrktrain)
+
+# Recoding car ownership as a binary factor variable
+data_clean %<>% mutate(B9SCQ19 = case_when(
+  B9SCQ19 > 0 ~ 1,
+  B9SCQ19 == 0 ~ 0
+))
+data_clean$B9SCQ19 %<>% factor(.)
+
+# Combining response outcome variables into a single binary variable and removing individual variables
+data_clean %<>% mutate(dv_participation = case_when(
+  if_all(contains("OUTCME"), ~. == 1) ~ 1,
+  if_any(contains("OUTCME"), ~. != 1) ~ 0
+))
+data_clean$dv_participation %<>% factor(.)
+data_clean %<>% select(-contains("OUTCME"))
+
+# Combining organisation membership into a single variable and removing individual variables
+data_clean %<>% mutate(dv_organisations = case_when(
+  if_any(B9SCQ8A:B9SCQ8P, ~. == 1) ~ 1,
+  if_all(B9SCQ8A:B9SCQ8P, ~. == 0) ~ 0
+))
+data_clean$dv_organisations %<>% factor(.)
+data_clean %<>% select(-(B9SCQ8A:B9SCQ8P))
+
+# Combining marital status items into a single variable and removing individual variables
+data_clean %<>% mutate(dv_marital = case_when(
+  B9MARCHK == 1 | B9HMS %in% c(2, 5) ~ "Married/CP",
+  B9DIVCHK == 1 | B9HMS %in% c(1, 3, 4, 6, 7) ~ "Divorced/Separated/Widowed",
+  B9HMS == 8 ~ "Single"
+))
+data_clean %<>% select(-B9DIVCHK, -B9HMS, -B9MARCHK)
+
+# Recoding housing tenure at age 42
+data_clean %<>% mutate(B9TEN = case_when(
+  B9TEN %in% c(1, 2) ~ "Owned",
+  B9TEN %in% c(3, 4, 5, 7) ~ "Not owned"
+))
 
 # Deriving total Rutter score at age 10
 data_clean %<>% mutate(dv_rutter_10 = rowSums(across(m43:m61)))
