@@ -234,7 +234,9 @@ is.na(age_5dv[,]) <- age_5dv[,] == -1
 is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] < 0
 is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] > 7
 
-# Age 10 dataset (positive activities): negative values become NA
+# Age 10 dataset (Rutter scale, CDS, positive activities): negative values become NA
+is.na(age_10[, grep("j127", names(age_10)):grep("j178b", names(age_10))]) <- age_10[, grep("j127", names(age_10)):grep("j178b", names(age_10))] < 0
+is.na(age_10[, grep("m43", names(age_10)):grep("m61", names(age_10))]) <- age_10[, grep("m43", names(age_10)):grep("m61", names(age_10))] < 0
 is.na(age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))]) <- age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))] < 0
 
 # Age 16 dataset: negative values become NA
