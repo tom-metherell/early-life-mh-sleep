@@ -1,0 +1,104 @@
+---
+title: "3_poisson_regression"
+author: "Thomas E. Metherell"
+date: "2023-01-05"
+output: html_document
+---
+
+Script in series: "Associations between early life mental health indicators and sleep in adulthood"
+
+This script performs multiple imputation and Poisson regression analyses associated with this project.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dependencies
+We start by loading the necessary dependencies.
+
+```{r dependencies}
+library(haven)
+library(tidyverse)
+library(magrittr)
+library(parallel)
+library(mice)
+library(lmtest)
+library(sandwich)
+```
+
+## Loading the data
+We now load the cleaned BCS70 data.
+```{r load_data}
+data_main <- read_dta(".\\Cleaned\\data_clean.dta")
+```
+
+## TEMPORARY - simulating sleep data
+```{r simulate_sleep}
+bcsid <- data_main$bcsid
+sleep_sim <- rpois(nrow(data_main), 0.20)
+
+data_sleep <- data.frame(bcsid, sleep_sim)
+
+data_merged <- full_join(data_main, data_sleep, by = "bcsid")
+```
+
+## Performing multiple imputation
+We can now use the `mice` package to create multiple imputed datasets from the `data_merged` data frame, which contains missing data.
+
+```{r mi}
+# Removing Stata-format data labels which are not compatible with mice
+data_merged %<>% zap_labels(.)
+
+# Establishing a cluster for parallel computation to save time
+cl <- makeCluster(detectCores())
+
+# Setting random seed
+clusterSetRNGStream(cl, 1858)
+
+# Making the data frame visible in the cluster environment
+clusterExport(cl, "data_merged")
+
+# Loading the mice package in the cluster environment
+clusterEvalQ(cl, library(mice))
+
+# Running multiple imputation with 10 imputations per core used and a maximum of 10 iterations
+## This code was run with 8 cores and therefore there are 80 imputations in total
+imp_pars <-
+  parLapply(cl = cl, X = 1:detectCores(), fun = function(no){
+    mice(data_merged, m = 10, maxit = 10, printFlag = FALSE)
+  })
+stopCluster(cl)
+
+# Merging imputations into a single mids object 
+imp_merged <- imp_pars[[1]]
+for(i in 2:length(imp_pars)){
+  imp_merged <- mice::ibind(imp_merged, imp_pars[[i]])
+}
+```
+
+## Regression
+We can now perform the regression analyses.
+```{r regression}
+#######
+# Function : pois_regr
+# Input : formula, a string containing a formula which describes the dependent and independent variables in the form dep ~ ind1 + ind2 + ind3 + ...
+# Method : The function fits a modified Poisson regression model to the multiply imputed data according to the specified formula, obtains the risk ratio, confidence intervals and p-values from the model and binds these into a data frame
+# Output : A data frame containing the risk ratios, confidence intervals and p-values obtained from a modified Poisson regression of the specified independent variables against the dependent variable
+#######
+pois_regr <- function(formula){
+  suppressWarnings(
+    model_fit <- with(imp_merged, coeftest(glm(as.formula(formula), family = poisson(link = "log"))), vcov. = sandwich)
+    results <- summary(pool(model_fit))
+    
+    term <- results[, 1]
+    RR <- round(exp(results[, 2]), 2)
+    LCI <- round(exp(results[, 2] + qnorm(0.05/2)*results[, 3]), 2)
+    UCI <- round(exp(results[, 2] - qnorm(0.05/2)*results[, 3]), 2)
+    P <- round(results[, 6], 3)
+    
+    results_frame <- data.frame(term, RR, LCI, UCI, P)
+    
+    return(results_frame)
+  )
+}
+```
