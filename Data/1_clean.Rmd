@@ -432,7 +432,7 @@ data_clean %<>% select(-e192)
 
 # Deriving maximum parental social class at age 5 and removing individual variables
 data_clean %<>% rowwise() %>% mutate(dv_sc_age_5 = min(e197, e206))
-data_clean %<>% select(e197, e206)
+data_clean %<>% select(-e197, -e206)
 
 # Combining age 5 medical condition variables into a single binary variable and removing individual variables
 data_clean %<>% mutate(dv_med_5 = case_when(
