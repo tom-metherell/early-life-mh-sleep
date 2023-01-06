@@ -301,7 +301,7 @@ is.na(age_46[,]) <- age_46[,] < 0
 is.na(CLOSER_SES[,]) <- CLOSER_SES[,] < 0
 
 # CLOSER childhood environment dataset (all variables except internalising/externalising behaviour): negative values become NA
-is.na(CLOSER_env[c("prmnh", "tenure")]) <- CLOSER_env[c("prmnh", "tenure")] < 0
+is.na(CLOSER_env[c("ameni", "brfed", "crowd", "divorce", "prmnh", "resmove", "sepmumbcs", "tenure")]) <- CLOSER_env[c("ameni", "brfed", "crowd", "divorce", "prmnh", "resmove", "sepmumbcs", "tenure")] < 0
 
 # CLOSER childhood environment dataset (internalising/externalising behaviour): values less than -100 become NA
 is.na(CLOSER_env[c("intbcsz", "extbcsz")]) <- CLOSER_env[c("intbcsz", "extbcsz")] < -100
@@ -417,6 +417,10 @@ data_clean %<>% select(-a0018)
 
 # Recoding "other"/"unsupported" values as missing in a0014 for use as an auxiliary variable
 is.na(data_clean[c("a0014")]) <- data_clean[c("a0014")] > 6
+
+# Deriving maximum parental education at birth and removing individual variables
+data_clean %<>% rowwise() %>% mutate(dv_par_edu_birth = max(a0009, a0010))
+data_clean %<>% select(-a0009, -a0010)
 
 # Deriving maximum parental education at age 5 and removing mother variable
 data_clean %<>% rowwise() %>% mutate(dv_par_edu_5 = max(e191, e192))
