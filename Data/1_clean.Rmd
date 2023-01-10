@@ -65,7 +65,6 @@ birth %<>% select(
   a0009, # Mother's age at completion of education
   a0010, # Father's age at completion of education
   a0014, # Social class of father in 1970
-  a0018, # Mother's social class in 1970
   a0043b, # Smoking during pregnancy
   a0195a, # Gestational age in days
   a0230, # Occurrence of genital tract bleeding*
@@ -120,7 +119,8 @@ age_10 %<>% select(
   i4201:i4221, # BAS word similarities (derived)
   j127:j178b, # Child Development Scale
   m84:m101, # Positive activities outside school*
-  meb4_1, meb4_6, meb4_16, meb4_21, meb4_26, meb4_46, meb4_51, # Medical conditions
+  meb4_1, meb4_6, meb4_16, meb4_21, meb4_26, meb4_46, meb4_51, # Medical conditions (present)
+  meb4_2:meb4_4, meb4_7:meb4_9, meb4_17:meb4_19, meb4_22:meb4_24, meb4_27:meb4_29, meb4_47:meb4_49, meb4_52:meb4_54, # Medical conditions (absent)
   tests10 # Maths test, reading test, BAS test completed
 )
 
@@ -165,7 +165,7 @@ age_16school %<>% rename(bcsid = BCSID)
 # Age 26 sweep data
 age_26 %<>% select(
   bcsid, # BCS70 serial number
-  b960540 # Accidents and assaults*
+  b960539, b960540 # Accidents and assaults*
 )
 
 # Age 30 sweep data
@@ -173,7 +173,7 @@ age_30 %<>% select(
   bcsid, # BCS70 serial number
   aptrain, # Apprenticeships*
   emosup, # People for advice/support*
-  numadmn, # Hospital admissions*
+  hospital, numadmn, # Hospital admissions*
   wrktrain, # Work-related training*
   vote97 # Voted in 1997 General Election*
 )
@@ -289,7 +289,7 @@ is.na(age_26[,]) <- age_26[,] < 0
 is.na(age_30[, "numadmn"]) <- age_30[, "numadmn"] == 99
 
 # Age 30 dataset (all other variables): values above 7 become NA
-is.na(age_30[c("aptrain", "wrktrain", "emosup", "vote97")]) <- age_30[c("aptrain", "wrktrain", "emosup", "vote97")] > 7
+is.na(age_30[c("aptrain", "wrktrain", "emosup", "hospital", "vote97")]) <- age_30[c("aptrain", "wrktrain", "emosup", "hospital", "vote97")] > 7
 
 # Age 42 dataset: negative values become NA
 is.na(age_42[,]) <- age_42[,] < 0
@@ -408,12 +408,11 @@ data_clean %<>% select(-(j127:j178b))
 ```
 
 ## Deriving control variables
-... and the controls.
+... and the controls. Many variables also need to be recoded as factors.
 
 ```{r control_variables}
-# Deriving maximum parental social class at birth and removing mother variable
-data_clean %<>% rowwise() %>% mutate(dv_sc_birth = min(a0014, a0018))
-data_clean %<>% select(-a0018)
+# Storing paternal social class at birth as a separate variable
+data_clean %<>% mutate(dv_sc_birth = a0014)
 
 # Recoding "other"/"unsupported" values as missing in a0014 for use as an auxiliary variable
 is.na(data_clean[c("a0014")]) <- data_clean[c("a0014")] > 6
@@ -431,7 +430,6 @@ data_clean %<>% mutate(dv_father_schl = case_when(
   e192 >= 16 ~ 1,
   e192 < 15 ~ 0
 ))
-data_clean$dv_father_schl %<>% factor(.)
 data_clean %<>% select(-e192)
 
 # Deriving maximum parental social class at age 5 and removing individual variables
@@ -443,14 +441,14 @@ data_clean %<>% mutate(dv_med_5 = case_when(
   if_any(e067:e076, ~. == 1) ~ 1,
   if_all(e067:e076, ~. != 1) ~ 0
 ))
-data_clean$dv_med_5 %<>% factor(.)
 data_clean %<>% select(-(e067:e076))
 
 # Combining age 10 medical condition variables into a single binary variable and removing individual variables
 data_clean %<>% mutate(dv_med_10 = case_when(
-  if_any(meb4_1:meb4_51, ~. == 1) ~ "Yes"
+  if_any(meb4_1:meb4_51, ~. == 1) ~ 1,
+  if_all(meb4_1:meb4_51, ~ is.na(.)) & if_any(meb4_2:meb4_54, ~. == 1) ~ 0
 ))
-data_clean %<>% select(-(meb4_1:meb4_51))
+data_clean %<>% select(-(meb4_1:meb4_51), -(meb4_2:meb4_54))
 
 # Combining age 10 income variables into a single variable and removing individual variables
 data_clean %<>% mutate(dv_income_10 = case_when(
@@ -470,10 +468,9 @@ data_clean %<>% select(-t11_2, -t11_9)
 
 # Combining age 16 income source variables into a single variable (employment & investments vs other) and removing individual variables
 data_clean %<>% mutate(dv_incsource = case_when(
-  if_any(oe1_1:oe1_5, ~. == 1) ~ 1,
-  if_all(oe1_1:oe1_5, ~. == 2) & if_any(oe1_6:oe1_19, ~. == 1) ~ 2
+  if_any(oe1_1:oe1_5, ~. == 1) ~ "Employment/investments",
+  if_all(oe1_1:oe1_5, ~. == 2) & if_any(oe1_6:oe1_19, ~. == 1) ~ "Other"
 ))
-data_clean$dv_incsource %<>% factor(.)
 data_clean %<>% select(-contains("oe1_"))
 
 # Combining positive activities outside school into a single variable and removing individual variables
@@ -485,38 +482,47 @@ data_clean %<>% mutate(dv_alcohol = case_when(
   if_any(hd5_1:hd5_7, ~. == 1) ~ 1,
   hd5_8 == 1 ~ 0
 ))
-data_clean$dv_alcohol %<>% factor(.)
 data_clean %<>% select(-contains("hd5_"))
+
+# Combining accidents and assaults into a single variable and removing individual variables
+data_clean %<>% mutate(dv_accidents = case_when(
+  b960539 == 1 ~ 0L,
+  b960540 > 0 ~ as.integer(b960540)
+))
+data_clean %<>% select(-b960539, -b960540)
+
+# Combining hospital admissions into a single variable and removing individual variables
+data_clean %<>% mutate(dv_hospital = case_when(
+  hospital == 1 ~ numadmn,
+  hospital == 2 ~ 0
+))
+data_clean %<>% select(-hospital, -numadmn)
 
 # Combining apprenticeships and work-related training into a single variable and removing individual variables
 data_clean %<>% mutate(dv_training = case_when(
   if_any(c("aptrain", "wrktrain"), ~. == 1) ~ 1,
   if_all(c("aptrain", "wrktrain"), ~. == 2) ~ 0
 ))
-data_clean$dv_training %<>% factor(.)
 data_clean %<>% select(-aptrain, -wrktrain)
 
 # Recoding car ownership as a binary factor variable
 data_clean %<>% mutate(B9SCQ19 = case_when(
-  B9SCQ19 > 0 ~ 1,
-  B9SCQ19 == 0 ~ 0
+  B9SCQ19 > 1 ~ 1,
+  B9SCQ19 == 1 ~ 0
 ))
-data_clean$B9SCQ19 %<>% factor(.)
 
 # Combining response outcome variables into a single binary variable and removing individual variables
 data_clean %<>% mutate(dv_participation = case_when(
   if_all(contains("OUTCME"), ~. == 1) ~ 1,
   if_any(contains("OUTCME"), ~. != 1) ~ 0
 ))
-data_clean$dv_participation %<>% factor(.)
 data_clean %<>% select(-contains("OUTCME"))
 
 # Combining organisation membership into a single variable and removing individual variables
 data_clean %<>% mutate(dv_organisations = case_when(
-  if_any(B9SCQ8A:B9SCQ8P, ~. == 1) ~ 1,
-  if_all(B9SCQ8A:B9SCQ8P, ~. == 0) ~ 0
+  if_any(B9SCQ8A:B9SCQ8O, ~. == 1) ~ 1,
+  B9SCQ8P == 1 ~ 0
 ))
-data_clean$dv_organisations %<>% factor(.)
 data_clean %<>% select(-(B9SCQ8A:B9SCQ8P))
 
 # Combining marital status items into a single variable and removing individual variables
@@ -532,6 +538,22 @@ data_clean %<>% mutate(B9TEN = case_when(
   B9TEN %in% c(1, 2) ~ "Owned",
   B9TEN %in% c(3, 4, 5, 7) ~ "Not owned"
 ))
+
+# Recoding labelled variables as factors, taking the values of the data labels
+data_clean[c("a0014", "a0043b", "a0255", "e216a", "c3_11", "BDSTYPE", "B9TEN", "ameni", "brfed", "crowd", "resmove", "tenure", "fclrg90", "dv_sc_birth", "dv_sc_age_5", "dv_sc_age_16", "dv_incsource", "dv_marital")] %<>% as_factor(., only_labelled = FALSE)
+
+# Removing Stata-format data labels which are incompatible with further cleaning and analysis steps
+data_clean %<>% zap_labels(.)
+
+# Recoding "yes/no" variables as binary variables taking values 0 (for "no") and 1 (for "yes")
+data_clean %<>% mutate_at(
+  c("emosup", "vote97", "B9SCQ17", "B10MHPRB1", "B10MHPRB2", "B10MHPRB3", "B10MHPRB4", "B10MHPRB5", "B10MHPRB6"),
+  ~ recode(., `2` = 0L, `1` = 1L)
+)
+data_clean %<>% mutate_at(
+  c("d016a", "rd6m_1"),
+  ~ recode(., `1` = 0L, `2` = 1L)
+)
 ```
 
 ## Exporting data
