@@ -20,6 +20,7 @@ We start by loading the necessary dependencies.
 library(haven)
 library(tidyverse)
 library(magrittr)
+library(data.table)
 ```
 
 ## Loading data
@@ -197,6 +198,7 @@ age_46 %<>% rename(bcsid = BCSID)
 # Age 46 sweep data
 age_46 %<>% select(
   bcsid, # BCS70 serial number
+  B10HSLEEP, # Average number of hours of sleep per night
   BD10MAL, # Total Malaise score
   contains("B10MHPRB"), # Seen Dr/specialist for mental health problems
   BD10WEMWB # Warwick Edinburgh Mental Well-Being Scale
@@ -539,6 +541,20 @@ data_clean %<>% mutate(B9TEN = case_when(
   B9TEN %in% c(3, 4, 5, 7) ~ "Not owned"
 ))
 
+# Recoding "seen Dr/specialist for mental health problems" into a single binary variable and removing individual variables
+data_clean %<>% mutate(dv_mhprb = case_when(
+  if_any(B10MHPRB1:B10MHPRB6, ~. == 1) ~ 1,
+  if_all(B10MHPRB1:B10MHPRB6, ~. == 2) ~ 0
+))
+data_clean %<>% select(-(B10MHPRB1:B10MHPRB6))
+
+# Deriving abnormal sleep and removing raw variable
+data_clean %<>% mutate(dv_sr_sleep_abn = case_when(
+  B10HSLEEP < 6 | B10HSLEEP > 9 ~ 1,
+  B10HSLEEP >= 6 & B10HSLEEP <= 9 ~ 0
+))
+data_clean %<>% select(-B10HSLEEP)
+
 # Recoding labelled variables as factors, taking the values of the data labels
 data_clean[c("a0014", "a0043b", "a0255", "e216a", "c3_11", "BDSTYPE", "B9TEN", "ameni", "brfed", "crowd", "resmove", "tenure", "fclrg90", "dv_sc_birth", "dv_sc_age_5", "dv_sc_age_16", "dv_incsource", "dv_marital")] %<>% as_factor(., only_labelled = FALSE)
 
@@ -547,7 +563,7 @@ data_clean %<>% zap_labels(.)
 
 # Recoding "yes/no" variables as binary variables taking values 0 (for "no") and 1 (for "yes")
 data_clean %<>% mutate_at(
-  c("emosup", "vote97", "B9SCQ17", "B10MHPRB1", "B10MHPRB2", "B10MHPRB3", "B10MHPRB4", "B10MHPRB5", "B10MHPRB6"),
+  c("emosup", "vote97", "B9SCQ17"),
   ~ recode(., `2` = 0L, `1` = 1L)
 )
 data_clean %<>% mutate_at(
@@ -560,5 +576,5 @@ data_clean %<>% mutate_at(
 Finally, we can export the cleaned dataset for future use.
 
 ```{r export_clean_data}
-write_dta(data_clean, ".\\Cleaned\\data_clean.dta")
+fwrite(data_clean, ".\\Cleaned\\data_clean.csv")
 ```

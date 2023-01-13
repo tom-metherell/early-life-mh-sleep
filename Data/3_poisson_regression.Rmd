@@ -17,7 +17,7 @@ knitr::opts_chunk$set(echo = TRUE)
 We start by loading the necessary dependencies.
 
 ```{r dependencies}
-library(haven)
+library(data.table)
 library(tidyverse)
 library(magrittr)
 library(parallel)
@@ -30,27 +30,13 @@ library(sandwich)
 We now load the cleaned BCS70 data.
 
 ```{r load_data}
-data_main <- read_dta(".\\Cleaned\\data_clean.dta")
-```
-
-## TEMPORARY - simulating sleep data
-
-```{r simulate_sleep}
-bcsid <- data_main$bcsid
-sleep_sim <- rpois(nrow(data_main), 0.20)
-
-data_sleep <- data.frame(bcsid, sleep_sim)
-
-data_merged <- full_join(data_main, data_sleep, by = "bcsid")
+data_merged <- fread(".\\Cleaned\\data_clean.csv") %>% data.frame(.)
 ```
 
 ## Performing multiple imputation
 We can now use the `mice` package to create multiple imputed datasets from the `data_merged` data frame, which contains missing data.
 
 ```{r mi}
-# Removing Stata-format data labels which are not compatible with mice
-data_merged %<>% zap_labels(.)
-
 # Establishing a cluster for parallel computation to save time
 cl <- makeCluster(detectCores())
 
@@ -108,37 +94,74 @@ pois_regr <- function(formula){
 # Performing regressions against abnormal sleep
 
 # Rutter (age 5)
-rutter_5 <- pois_regr("d119 ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
+rutter_5 <- pois_regr("dv_sr_sleep_abn ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
 
 print(rutter_5)
 
 # Rutter (age 10)
-rutter_10 <- pois_regr("BD3MRUTT ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016 + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+rutter_10 <- pois_regr("dv_sr_sleep_abn ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(rutter_10)
 
 # Child Development Scale
-cds <- pois_regr("dv_cds_10 ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016 + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+cds <- pois_regr("dv_sr_sleep_abn ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(cds)
 
 # Malaise Inventory
-malaise <- pois_regr("BD4MAL ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016 + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+malaise <- pois_regr("dv_sr_sleep_abn ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(malaise)
 
 # Behavioural or emotional problems
-beh_emo <- pois_regr("rd6m_1 ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016 + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+beh_emo <- pois_regr("dv_sr_sleep_abn ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(beh_emo)
 
 # Internalising behaviour in childhood
-int_beh <- pois_regr("intbcsz ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016 + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+int_beh <- pois_regr("dv_sr_sleep_abn ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(int_beh)
 
 # Externalising behaviour in childhood
-ext_beh <- pois_regr("extbcsz ~ a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016 + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+ext_beh <- pois_regr("dv_sr_sleep_abn ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+
+print(ext_beh)
+
+# Repeating with adult MH variables as controls
+
+# Rutter (age 5)
+rutter_5 <- pois_regr("dv_sr_sleep_abn ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed + BD10MAL + BD10WEMWB + dv_mhprb")
+
+print(rutter_5)
+
+# Rutter (age 10)
+rutter_10 <- pois_regr("dv_sr_sleep_abn ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
+
+print(rutter_10)
+
+# Child Development Scale
+cds <- pois_regr("dv_sr_sleep_abn ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
+
+print(cds)
+
+# Malaise Inventory
+malaise <- pois_regr("dv_sr_sleep_abn ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
+
+print(malaise)
+
+# Behavioural or emotional problems
+beh_emo <- pois_regr("dv_sr_sleep_abn ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
+
+print(beh_emo)
+
+# Internalising behaviour in childhood
+int_beh <- pois_regr("dv_sr_sleep_abn ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
+
+print(int_beh)
+
+# Externalising behaviour in childhood
+ext_beh <- pois_regr("dv_sr_sleep_abn ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
 
 print(ext_beh)
 ```
