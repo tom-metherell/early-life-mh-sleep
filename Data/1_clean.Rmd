@@ -199,7 +199,9 @@ age_46 %<>% rename(bcsid = BCSID)
 age_46 %<>% select(
   bcsid, # BCS70 serial number
   B10HSLEEP, # Average number of hours of sleep per night
+  BD10ENFA, # Energy/fatigue score
   BD10MAL, # Total Malaise score
+  BD10MBMI, # Body mass index (nurse-measured)
   contains("B10MHPRB"), # Seen Dr/specialist for mental health problems
   BD10WEMWB # Warwick Edinburgh Mental Well-Being Scale
 )
@@ -549,10 +551,20 @@ data_clean %<>% mutate(dv_mhprb = case_when(
 data_clean %<>% select(-(B10MHPRB1:B10MHPRB6))
 
 # Deriving abnormal sleep and removing raw variable
-data_clean %<>% mutate(dv_sr_sleep_abn = case_when(
-  B10HSLEEP < 6 | B10HSLEEP > 9 ~ 1,
-  B10HSLEEP >= 6 & B10HSLEEP <= 9 ~ 0
-))
+data_clean %<>% mutate(
+  dv_sr_sleep_abn = case_when(
+    B10HSLEEP < 6 | B10HSLEEP > 9 ~ 1,
+    B10HSLEEP >= 6 & B10HSLEEP <= 9 ~ 0
+  ),
+  dv_sr_sleep_short = case_when(
+    B10HSLEEP < 6 ~ 1,
+    B10HSLEEP >= 6 ~ 0
+  ),
+  dv_sr_sleep_long = case_when(
+    B10HSLEEP > 9 ~ 1,
+    B10HSLEEP <= 9 ~ 0
+  )
+)
 data_clean %<>% select(-B10HSLEEP)
 
 # Recoding labelled variables as factors, taking the values of the data labels
