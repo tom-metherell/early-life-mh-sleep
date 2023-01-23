@@ -14,7 +14,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ## Dependencies
-We start by loading the necessary dependencies
+We start by loading the necessary dependencies.
 
 ```{r dependencies}
 library(haven)
