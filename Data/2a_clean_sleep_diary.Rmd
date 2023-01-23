@@ -1,0 +1,318 @@
+---
+title: "2a_clean_sleep_diary"
+author: "Thomas E. Metherell"
+date: "2023-01-23"
+output: html_document
+---
+
+Script in series: "Associations between early life mental health indicators and sleep in adulthood"
+
+This script cleans and pre-processes data from the sleep diary, self-reported by BCS70 participants as part of the Age 46 biomedical sweep.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dependencies
+We start by loading the necessary dependencies
+
+```{r dependencies}
+library(haven)
+library(tidyverse)
+library(magrittr)
+library(data.table)
+library(dplyr)
+library(lubridate)
+library(chron)
+library(fasttime)
+```
+
+## Loading data
+We can now load the raw sleep diary data.
+
+```{r load_data}
+diary <- read_sav("BCS46_sleep_diary.sav")
+
+# Removing SPSS-format data labels, which are not compatible with cleaning functions
+diary %<>% zap_labels(.)
+```
+
+## Converting data to 'long' format
+To make pre-processing easier, we convert the data to 'long' format, where each row denotes a single observation (in this case, a day for a given participant), rather than all of a participant's data.
+
+```{r long}
+# Renaming columns ending in "{X}b" where {X} is an integer, to "b{X}"
+newnames <- names(diary %>% select(ends_with("b"))) %>%
+  gsub("^(.*?).{0}(.{2})$", "\\1b\\2", .) %>%
+  gsub("^(.*?).{1}(.{0})$", "\\1\\2", .)
+setnames(diary, old = names(diary %>% select(ends_with("b"))), new = newnames)
+rm(newnames)
+
+# Converting data to long format
+diary %<>% pivot_longer(
+  cols = c(-AgencySerial, -Removed, -dateremoved, -timeremoved, -TimeRemovedbampm), 
+  names_to = c(".value", "day"), 
+  names_pattern = "(.*)(.)$"
+)
+```
+
+## Correcting dates
+In the raw dataset, there are numerous errors in reported dates (e.g. dates not being consecutive or being missing). To correct this, we adopt the following approach:
+1. Rejecting dates which are not consistent with the dates on the days before and after;
+2. Using each remaining date to infer the dates for the entire duration of the sleep diary for each participant;
+3. Choosing the most agreed-upon reference dates as the dates to be used for each participant.
+
+```{r dates}
+# Rejecting dates before data collection began (missing dates tend to be interpreted by R as dates in the 16th or 19th centuries)
+is.na(diary[, "sleepdate"]) <- diary[, "sleepdate"] < "2016-01-01"
+
+# Creating a new variable, dv_sleepdate, which accepts all dates for day 1, and subsequently dates which are consistent with the days either side (or the two previous days for day 8)
+diary %<>% mutate(dv_sleepdate = case_when(
+  day == 1 & !is.na(sleepdate) ~ as_date(sleepdate),
+  day %in% 2:7 & !is.na(sleepdate) ~ as_date(sleepdate),
+  day %in% 2:7 & is.na(sleepdate) & lag(sleepdate) == as_date(sleepdate) - 1 & lead(sleepdate) == as_date(sleepdate) + 1 ~ as_date(lag(sleepdate)) + 1,
+  day == 8 & !is.na(sleepdate) ~ as_date(sleepdate),
+  day == 8 & is.na(sleepdate) & lag(sleepdate) == as_date(sleepdate) - 1 & lag(sleepdate, 2) == as_date(sleepdate) - 2 ~ as_date(lag(sleepdate)) + 1
+  ), .after = sleepdate
+)
+
+# Based on the provisional dv_sleepdate values, creating 8 variables dv_refdate{1-8} which infer dates for the whole week from the date currently recorded for each successive day 
+diary %<>% group_by(AgencySerial) %>% mutate(dv_refdate1 = as_date(dv_sleepdate[day == 1]) + as.integer(day) - 1,
+                                             dv_refdate2 = as_date(dv_sleepdate[day == 2]) + as.integer(day) - 2,
+                                             dv_refdate3 = as_date(dv_sleepdate[day == 3]) + as.integer(day) - 3,
+                                             dv_refdate4 = as_date(dv_sleepdate[day == 4]) + as.integer(day) - 4,
+                                             dv_refdate5 = as_date(dv_sleepdate[day == 5]) + as.integer(day) - 5,
+                                             dv_refdate6 = as_date(dv_sleepdate[day == 6]) + as.integer(day) - 6,
+                                             dv_refdate7 = as_date(dv_sleepdate[day == 7]) + as.integer(day) - 7,
+                                             dv_refdate8 = as_date(dv_sleepdate[day == 8]) + as.integer(day) - 8) %>%
+  ungroup()
+
+# Determining with how many of the other reference dates each reference date agrees
+diary %<>% rowwise() %>% mutate(dv_refdate1_acc = case_when(
+                                !is.na(dv_refdate1) ~ sum(sapply(2:8, function(x) dv_refdate1 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                is.na(dv_refdate1) ~ 0L
+                                ),
+                                dv_refdate2_acc = case_when(
+                                  !is.na(dv_refdate2) ~ sum(sapply(c(1, 3:8), function(x) dv_refdate2 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate2) ~ 0L
+                                ),
+                                dv_refdate3_acc = case_when(
+                                  !is.na(dv_refdate3) ~ sum(sapply(c(1:2, 4:8), function(x) dv_refdate3 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate3) ~ 0L
+                                ),
+                                dv_refdate4_acc = case_when(
+                                  !is.na(dv_refdate4) ~ sum(sapply(c(1:3, 5:8), function(x) dv_refdate4 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate4) ~ 0L
+                                ),
+                                dv_refdate5_acc = case_when(
+                                  !is.na(dv_refdate5) ~ sum(sapply(c(1:4, 6:8), function(x) dv_refdate5 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate5) ~ 0L
+                                ),
+                                dv_refdate6_acc = case_when(
+                                  !is.na(dv_refdate6) ~ sum(sapply(c(1:5, 7:8), function(x) dv_refdate6 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate6) ~ 0L
+                                ),
+                                dv_refdate7_acc = case_when(
+                                  !is.na(dv_refdate7) ~ sum(sapply(c(1:6, 8), function(x) dv_refdate7 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate7) ~ 0L
+                                ),
+                                dv_refdate8_acc = case_when(
+                                  !is.na(dv_refdate8) ~ sum(sapply(1:7, function(x) dv_refdate8 == get(paste0("dv_refdate", x)) | is.na(get(paste0("dv_refdate", x))))),
+                                  is.na(dv_refdate8) ~ 0L
+                                )
+)
+
+# For each day, accepting the reference date with the highest agreement as the derived date (in case of ties, the first of the tied dates is selected)
+diary %<>% mutate(max_acc = max.col(across(dv_refdate1_acc:dv_refdate8_acc), ties.method = "first"))
+diary[!is.na(diary$max_acc),] %<>% mutate(dv_sleepdate = get(paste0("dv_refdate", max_acc)))
+
+# Removing columns that are no longer needed
+diary %<>% select(-(dv_refdate1:max_acc))
+
+# For participants where dates cannot be derived: replacing NAs with the dummy dates 1972-01-01 ~ 1972-01-08
+diary[is.na(diary$dv_sleepdate),]$dv_sleepdate <- as_date("1971-12-31") + as.integer(diary[is.na(diary$dv_sleepdate),]$day)
+```
+
+## Correcting times
+There are also numerous errors in reported times (e.g. time and AM/PM marker being inconsistent with each other, sleep and wake times being implausible in relation to each other). To correct this, we adopt the following approach:
+1. Shifting times back or forwards by 12 hours in order to make them consistent with the "AM/PM" marker;
+2. Correcting times which have obviously been misrecorded because of a misunderstanding of what "12:XX PM" refers to.
+Further correction takes place after the dates and times have been merged.
+
+```{r times}
+# Parsing the time columns into the chron 'times' format
+diary$sleepbed %<>% times()
+diary$sleepsleep %<>% times()
+diary$sleepwake %<>% times()
+diary$sleepup %<>% times()
+
+# For each column, accepting times where "AM/PM" marker is consistent with the provided time, and shifting other times to be consistent with the "AM/PM" marker (from this point onwards, all times use 24-hour format)
+diary %<>% mutate(dv_sleepbed = case_when(
+  !is.na(sleepbed) & sleepbed < times("12:00:00") & (SleepBedb %in% c("AM", "")) ~ sleepbed,
+  !is.na(sleepbed) & sleepbed < times("12:00:00") & SleepBedb == "PM" ~ sleepbed + 0.5,
+  !is.na(sleepbed) & sleepbed >= times("12:00:00") & SleepBedb == "AM" ~ sleepbed - 0.5,
+  !is.na(sleepbed) & sleepbed >= times("12:00:00") & (SleepBedb %in% c("PM", "")) ~ sleepbed
+), .after = sleepbed)
+
+diary %<>% mutate(dv_sleepsleep = case_when(
+  !is.na(sleepsleep) & sleepsleep < times("12:00:00") & (SleepSleepb %in% c("AM", "")) ~ sleepsleep,
+  !is.na(sleepsleep) & sleepsleep < times("12:00:00") & SleepSleepb == "PM" ~ sleepsleep + 0.5,
+  !is.na(sleepsleep) & sleepsleep >= times("12:00:00") & SleepSleepb == "AM" ~ sleepsleep - 0.5,
+  !is.na(sleepsleep) & sleepsleep >= times("12:00:00") & (SleepSleepb %in% c("PM", "")) ~ sleepsleep
+), .after = sleepsleep)
+
+diary %<>% mutate(dv_sleepwake = case_when(
+  !is.na(sleepwake) & sleepwake < times("12:00:00") & (SleepWakeb %in% c("AM", "")) ~ sleepwake,
+  !is.na(sleepwake) & sleepwake < times("12:00:00") & SleepWakeb == "PM" ~ sleepwake + 0.5,
+  !is.na(sleepwake) & sleepwake >= times("12:00:00") & SleepWakeb == "AM" ~ sleepwake - 0.5,
+  !is.na(sleepwake) & sleepwake >= times("12:00:00") & (SleepWakeb %in% c("PM", "")) ~ sleepwake
+), .after = sleepwake)
+
+diary %<>% mutate(dv_sleepup = case_when(
+  !is.na(sleepup) & sleepup < times("12:00:00") & (SleepUpb %in% c("AM", "")) ~ sleepup,
+  !is.na(sleepup) & sleepup < times("12:00:00") & SleepUpb == "PM" ~ sleepup + 0.5,
+  !is.na(sleepup) & sleepup >= times("12:00:00") & SleepUpb == "AM" ~ sleepup - 0.5,
+  !is.na(sleepup) & sleepup >= times("12:00:00") & (SleepUpb %in% c("PM", "")) ~ sleepup
+), .after = sleepup)
+
+# Correcting common error: times between 12~1am recorded as between 12~1pm
+diary %<>% mutate(dv_sleepsleep = if_else(
+  dv_sleepbed >= times("13:00:00") & dv_sleepsleep >= times("12:00:00") & dv_sleepsleep < times("13:00:00"),
+  dv_sleepsleep - 0.5,
+  dv_sleepsleep
+))
+```
+
+## Date-time merge
+We now merge the parsed dates and times into the standard POSIXct format.
+
+```{r dt_merge}
+# For bedtime and sleep time columns: If bed/sleep time precedes wake/up time, they are interpreted as being on the same day, otherwise the bed/sleep time is considered to be on the previous day.
+diary %<>% mutate(dv_sleepbed = case_when(
+  !is.na(dv_sleepbed) & dv_sleepbed < dv_sleepup ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepbed)),
+  !is.na(dv_sleepbed) & dv_sleepbed > dv_sleepup ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepbed)) - 86400,
+  !is.na(dv_sleepbed) & is.na(dv_sleepup) ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepbed)),
+  is.na(dv_sleepbed) ~ NA_POSIXct_
+))
+
+diary %<>% mutate(dv_sleepsleep = case_when(
+  !is.na(dv_sleepsleep) & dv_sleepsleep < dv_sleepwake ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepsleep)),
+  !is.na(dv_sleepsleep) & dv_sleepsleep > dv_sleepwake ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepsleep)) - 86400,
+  !is.na(dv_sleepsleep) & is.na(dv_sleepwake) ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepsleep)),
+  is.na(dv_sleepsleep) ~ NA_POSIXct_
+))
+
+# For wake and up time columns: the date and time are merged straightforwardly.
+diary %<>% mutate(dv_sleepwake = case_when(
+  !is.na(dv_sleepwake) ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepwake)),
+  is.na(dv_sleepwake) ~ NA_POSIXct_
+))
+
+diary %<>% mutate(dv_sleepup = case_when(
+  !is.na(dv_sleepup) ~ fastPOSIXct(paste(dv_sleepdate, dv_sleepup)),
+  is.na(dv_sleepup) ~ NA_POSIXct_
+))
+
+# Correcting all columns for daylight saving time overcompensation (the fastPOSIXct function adds one hour to times while DST is active)
+diary %<>% mutate(dv_sleepbed = case_when(
+  (dv_sleepbed >= fastPOSIXct("2016-03-27 02:00:00") & dv_sleepbed < fastPOSIXct("2016-10-30 01:00:00")) |
+    (dv_sleepbed >= fastPOSIXct("2017-03-26 02:00:00") & dv_sleepbed < fastPOSIXct("2017-10-29 01:00:00")) |
+    (dv_sleepbed >= fastPOSIXct("2018-03-25 02:00:00") & dv_sleepbed < fastPOSIXct("2018-10-28 01:00:00"))
+  ~ dv_sleepbed - 3600,
+  TRUE ~ dv_sleepbed
+))
+
+diary %<>% mutate(dv_sleepsleep = case_when(
+  (dv_sleepsleep >= fastPOSIXct("2016-03-27 02:00:00") & dv_sleepsleep < fastPOSIXct("2016-10-30 01:00:00")) |
+    (dv_sleepsleep >= fastPOSIXct("2017-03-26 02:00:00") & dv_sleepsleep < fastPOSIXct("2017-10-29 01:00:00")) |
+    (dv_sleepsleep >= fastPOSIXct("2018-03-25 02:00:00") & dv_sleepsleep < fastPOSIXct("2018-10-28 01:00:00"))
+  ~ dv_sleepsleep - 3600,
+  TRUE ~ dv_sleepsleep
+))
+
+diary %<>% mutate(dv_sleepwake = case_when(
+  (dv_sleepwake >= fastPOSIXct("2016-03-27 02:00:00") & dv_sleepwake < fastPOSIXct("2016-10-30 01:00:00")) |
+    (dv_sleepwake >= fastPOSIXct("2017-03-26 02:00:00") & dv_sleepwake < fastPOSIXct("2017-10-29 01:00:00")) |
+    (dv_sleepwake >= fastPOSIXct("2018-03-25 02:00:00") & dv_sleepwake < fastPOSIXct("2018-10-28 01:00:00"))
+  ~ dv_sleepwake - 3600,
+  TRUE ~ dv_sleepwake
+))
+
+diary %<>% mutate(dv_sleepup = case_when(
+  (dv_sleepup >= fastPOSIXct("2016-03-27 02:00:00") & dv_sleepup < fastPOSIXct("2016-10-30 01:00:00")) |
+    (dv_sleepup >= fastPOSIXct("2017-03-26 02:00:00") & dv_sleepup < fastPOSIXct("2017-10-29 01:00:00")) |
+    (dv_sleepup >= fastPOSIXct("2018-03-25 02:00:00") & dv_sleepup < fastPOSIXct("2018-10-28 01:00:00"))
+  ~ dv_sleepup - 3600,
+  TRUE ~ dv_sleepup
+))
+```
+
+## Further time correction
+We can now complete the following further correction step:
+
+Where the sleep time is recorded as before the bed time and the sleep duration exceeds 12 hours, it is assumed that the sleep time is incorrectly recorded as 12 hours too early and therefore the sleep time is shifted 12 hours later.
+
+```{r times_2}
+diary %<>% mutate(dv_sleepsleep = if_else(
+  (dv_sleepwake - dv_sleepsleep) >= 43200 & dv_sleepsleep < dv_sleepbed,
+  dv_sleepsleep + 43200,
+  dv_sleepsleep
+))
+```
+
+## Deriving sleep duration
+We can now simply subtract the wake times from the sleep times to derive a sleep duration for each day of the sleep diary.
+
+On doing this, it becomes apparent that the previous cleaning steps have not been sufficient to prevent a large number of derived sleep durations from being 12 hours too long (from plotting the data, there is clearly a distinct distribution with a modal duration of ~19.5 hours = ~7.5 + 12 hours). In these cases, there is no obvious way to determine which time is wrong with any certainty, but nonetheless it is clear that the derived duration is incorrect. Therefore, durations exceeding 15 hours are interpreted as incorrect and set to missing.
+
+```{r duration}
+# Deriving sleep duration as wake time - sleep time (in minutes)
+diary %<>% mutate(dv_sleepdur = as.double(dv_sleepwake - dv_sleepsleep)*60)
+
+# Rejecting durations over 900 minutes = 15 hours
+is.na(diary[, "dv_sleepdur"]) <- diary[, "dv_sleepdur"] > 900
+```
+
+## Taking median values
+We can now derive the median sleep duration, which is the primary outcome to be obtained from the sleep diary data. For cases where there are fewer than 3 sleep durations available, the median sleep duration is recorded as missing.
+
+The median sleep rating is also needed as an auxiliary variable, and the derivation follows the same process.
+
+```{r medians}
+# Setting missing sleep ratings to NA
+is.na(diary[, "sleeprate"]) <- diary[, "sleeprate"] < 0
+
+# Deriving medians...
+diary %<>% group_by(AgencySerial) %>% mutate(
+  # Sleep duration
+  md_sd_sleepdur = if_else(
+    sum(!is.na(dv_sleepdur)) >= 3,
+    median(dv_sleepdur, na.rm = TRUE),
+    NA_real_
+  ),
+  # Sleep rating
+  md_sleeprate = if_else(
+    sum(!is.na(sleeprate)) >= 3,
+    median(sleeprate, na.rm = TRUE),
+    NA_real_
+  )
+)
+```
+
+## Re-widening dataset
+We can now convert the dataset back to the original 'wide' format.
+
+```{r wide}
+# Widening dataset
+diary %<>% pivot_wider(names_from = day, values_from = c(-AgencySerial, -Removed, -dateremoved, -timeremoved, -TimeRemovedbampm, -md_sd_sleepdur, -md_sleeprate), names_sep = "", names_vary = "slowest")
+
+# Removing artifact columns from the widening process
+diary %<>% select(c(-day1, -day2, -day3, -day4, -day5, -day6, -day7, -day8, -sleepwake8, -SleepWakeb8, -sleepup8, -SleepUpb8))
+```
+
+# Saving cleaned dataset
+Finally, we write the cleaned dataset to a new .sav file.
+
+```{r write_data}
+write_sav(diary, "diary_cleaned.sav")
+```
