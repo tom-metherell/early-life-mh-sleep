@@ -248,29 +248,94 @@ diary %<>% mutate(dv_sleepup = case_when(
 ```
 
 ## Further time correction
-We can now complete the following further correction step:
+We can now complete the following further correction steps:
 
-Where the sleep time is recorded as before the bed time and the sleep duration exceeds 12 hours, it is assumed that the sleep time is incorrectly recorded as 12 hours too early and therefore the sleep time is shifted 12 hours later.
+1. Where the sleep time is recorded as before the bed time and the sleep duration exceeds 12 hours, it is assumed that the sleep time is incorrectly recorded as 12 hours too early and therefore the sleep time is shifted 12 hours later.
+2. Where the sleep time would be within two hours of the bed time if it were moved backwards or forwards by 12 hours, the appropriate correction is made.
 
 ```{r times_2}
-diary %<>% mutate(dv_sleepsleep = if_else(
-  (dv_sleepwake - dv_sleepsleep) >= 43200 & dv_sleepsleep < dv_sleepbed,
-  dv_sleepsleep + 43200,
-  dv_sleepsleep
-))
+diary %<>% mutate(
+  dv_sleepsleep = if_else(
+    (dv_sleepwake - dv_sleepsleep) >= 43200 & dv_sleepsleep < dv_sleepbed,
+    dv_sleepsleep + 43200,
+    dv_sleepsleep
+  ),
+  dv_sleepsleep = case_when(
+    between(dv_sleepsleep - 43200 - dv_sleepbed, 0, 2) ~ dv_sleepsleep - 43200,
+    between(dv_sleepsleep + 43200 - dv_sleepbed, 0, 2) ~ dv_sleepsleep + 43200,
+    TRUE ~ dv_sleepsleep
+  )
+)
 ```
 
 ## Deriving sleep duration
 We can now simply subtract the wake times from the sleep times to derive a sleep duration for each day of the sleep diary.
 
-On doing this, it becomes apparent that the previous cleaning steps have not been sufficient to prevent a large number of derived sleep durations from being 12 hours too long (from plotting the data, there is clearly a distinct distribution with a modal duration of ~19.5 hours = ~7.5 + 12 hours). In these cases, there is no obvious way to determine which time is wrong with any certainty, but nonetheless it is clear that the derived duration is incorrect. Therefore, durations exceeding 15 hours are interpreted as incorrect and set to missing.
+On doing this, it becomes apparent that the previous cleaning steps have not been sufficient to prevent a large number of derived sleep durations from being 12 (or more) hours too long (or short) (from plotting the data, there is clearly a distinct distribution with a modal duration of ~19.5 hours = ~7.5 + 12 hours). In these cases, there is no obvious way to determine which time is wrong with any certainty. Therefore, we instead compute the provisional median sleep duration and compare individual values to said median, altering values where subtracting (or adding) 12 (or 24, 36...) hours from the value brings it closer to the median.
+
+This approach leaves 86 participants with median values greater than 12 hours (or negative values). These cases were checked manually and actions assigned in the file `manual_actions.csv`. These actions are applied here (`R` = reduce excessive times by 12 hours, `M` = set to missing, `N` = no action).
 
 ```{r duration}
 # Deriving sleep duration as wake time - sleep time (in minutes)
 diary %<>% mutate(dv_sleepdur = as.double(dv_sleepwake - dv_sleepsleep)*60)
 
-# Rejecting durations over 900 minutes = 15 hours
-is.na(diary[, "dv_sleepdur"]) <- diary[, "dv_sleepdur"] > 900
+# Calculating provisional median sleep duration and correcting values which are much larger than the provisional median by subtracting 12 hours
+diary %<>% group_by(AgencySerial) %>% mutate(
+  md_sd_sleepdur = median(dv_sleepdur),
+  dv_sleepdur = case_when(
+    dv_sleepdur > 720 & abs(dv_sleepdur - md_sd_sleepdur) <= abs(dv_sleepdur - 720 - md_sd_sleepdur) | is.na(md_sd_sleepdur) ~ dv_sleepdur,
+    dv_sleepdur > 720 & abs(dv_sleepdur - md_sd_sleepdur) > abs(dv_sleepdur - 720 - md_sd_sleepdur) ~ dv_sleepdur - 720,
+    dv_sleepdur <= 720 ~ dv_sleepdur
+  )
+)
+
+# Iterating again for values which are still too large
+diary %<>% group_by(AgencySerial) %>% mutate(
+  md_sd_sleepdur = median(dv_sleepdur),
+  dv_sleepdur = case_when(
+    dv_sleepdur > 720 & abs(dv_sleepdur - md_sd_sleepdur) <= abs(dv_sleepdur - 720 - md_sd_sleepdur) | is.na(md_sd_sleepdur) ~ dv_sleepdur,
+    dv_sleepdur > 720 & abs(dv_sleepdur - md_sd_sleepdur) > abs(dv_sleepdur - 720 - md_sd_sleepdur) ~ dv_sleepdur - 720,
+    dv_sleepdur <= 720 ~ dv_sleepdur
+  )
+)
+
+# Correcting negative values
+diary %<>% mutate(
+  dv_sleepdur = if_else(
+    dv_sleepdur < 0,
+    dv_sleepdur + 720,
+    dv_sleepdur
+  ),
+  dv_sleepdur = if_else(
+    dv_sleepdur < 0,
+    dv_sleepdur + 720,
+    dv_sleepdur
+  ),
+  dv_sleepdur = if_else(
+    dv_sleepdur < 0,
+    dv_sleepdur + 720,
+    dv_sleepdur
+  ),
+  dv_sleepdur = if_else(
+    dv_sleepdur < 0,
+    dv_sleepdur + 720,
+    dv_sleepdur
+  ),
+  dv_sleepdur = if_else(
+    dv_sleepdur < 0,
+    dv_sleepdur + 720,
+    dv_sleepdur
+  )
+)
+
+# Applying manual actions
+actions <- fread("manual_actions.csv")
+diary %<>% full_join(actions, by = "AgencySerial")
+diary %<>% mutate(dv_sleepdur = case_when(
+  action == "R" & dv_sleepdur > 720 ~ dv_sleepdur - 720,
+  action == "M" ~ NA_real_,
+  TRUE ~ dv_sleepdur
+))
 ```
 
 ## Taking median values
