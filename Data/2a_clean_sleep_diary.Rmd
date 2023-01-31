@@ -369,10 +369,10 @@ We can now convert the dataset back to the original 'wide' format.
 
 ```{r wide}
 # Widening dataset
-diary %<>% pivot_wider(names_from = day, values_from = c(-AgencySerial, -Removed, -dateremoved, -timeremoved, -TimeRemovedbampm, -md_sd_sleepdur, -md_sleeprate), names_sep = "", names_vary = "slowest")
+diary %<>% pivot_wider(names_from = day, values_from = c(-AgencySerial, -Removed, -dateremoved, -timeremoved, -TimeRemovedbampm, -md_sd_sleepdur, -md_sleeprate, -action), names_sep = "", names_vary = "slowest")
 
 # Removing artifact columns from the widening process
-diary %<>% select(c(-day1, -day2, -day3, -day4, -day5, -day6, -day7, -day8, -sleepwake8, -SleepWakeb8, -sleepup8, -SleepUpb8))
+diary %<>% select(c(-day1, -day2, -day3, -day4, -day5, -day6, -day7, -day8, -sleepwake8, -SleepWakeb8, -sleepup8, -SleepUpb8, -dv_sleepwake8, -dv_sleepup8, -dv_sleepdur8))
 ```
 
 # Saving cleaned dataset
