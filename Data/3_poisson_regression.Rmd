@@ -24,6 +24,7 @@ library(parallel)
 library(mice)
 library(lmtest)
 library(sandwich)
+library(nnet)
 ```
 
 ## Loading the data
@@ -70,7 +71,7 @@ We can now perform the regression analyses.
 ```{r regression}
 #######
 # Function : pois_regr
-# Input : formula, a string containing a formula which describes the dependent and independent variables in the form dep ~ ind1 + ind2 + ind3 + ...
+# Input : formula, a string containing a formula which describes the dependent and independent variables in the form "dep ~ ind1 + ind2 + ind3 + ..."
 # Method : The function fits a modified Poisson regression model to the multiply imputed data according to the specified formula, obtains the risk ratio, confidence intervals and p-values from the model and binds these into a data frame
 # Output : A data frame containing the risk ratios, confidence intervals and p-values obtained from a modified Poisson regression of the specified independent variables against the dependent variable
 #######
@@ -91,160 +92,75 @@ pois_regr <- function(formula){
   })
 }
 
+#######
+# Function : multinom_regr
+# Input : formula, a string containing a formula which describes the dependent and independent variables in the form "dep ~ ind1 + ind2 + ind3 + ...". The dependent variable must be a factor
+# Method : The function fits a multinomial logistic regression model to the multiply imputed data according to the specified formula, obtains the relative risk ratios, confidence intervals and p-values from the model and binds these into a data frame
+# Output : A data frame containing the relative risk ratios, confidence intervals and p-values obtained from a multinomial regression of the specified independent variables against the dependent variable
+#######
+multinom_regr <- function(formula){
+  model_fit <- with(imp_merged, multinom(as.formula(formula)))
+  results <- summary(pool(model_fit))
+  
+  group <- results$lev[-1]
+  RRR <- round(exp(results$coefficients[, 2]), 3)
+  LCI <- round(exp(results$coefficients[, 2] + qnorm(0.05/2)*results$standard.errors[, 2]), 3)
+  UCI <- round(exp(results$coefficients[, 2] - qnorm(0.05/2)*results$standard.errors[, 2]), 3)
+  P <- round((1 - pnorm(abs(results$coefficients[, 2]/results$standard.errors[, 2]), 0, 1)) * 2, 3)
+  
+  results_frame <- data.frame(group, RRR, LCI, UCI, P)
+  
+  return(results_frame)
+}
+
 # Performing regressions against abnormal sleep
 
 # Rutter (age 5)
 rutter_5 <- pois_regr("dv_sr_sleep_abn ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
-rutter_5_short <- pois_regr("dv_sr_sleep_short ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
-rutter_5_long <- pois_regr("dv_sr_sleep_long ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
+rutter_5_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
 
 print(rutter_5)
-print(rutter_5_short)
-print(rutter_5_long)
+print(rutter_5_multi)
 
 # Rutter (age 10)
 rutter_10 <- pois_regr("dv_sr_sleep_abn ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-rutter_10_short <- pois_regr("dv_sr_sleep_short ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-rutter_10_long <- pois_regr("dv_sr_sleep_long ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+rutter_10_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(rutter_10)
-print(rutter_10_short)
-print(rutter_10_long)
+print(rutter_10_multi)
 
 # Child Development Scale
 cds <- pois_regr("dv_sr_sleep_abn ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-cds_short <- pois_regr("dv_sr_sleep_short ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-cds_long <- pois_regr("dv_sr_sleep_long ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+cds_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(cds)
-print(cds_short)
-print(cds_long)
+print(cds_multi)
 
 # Malaise Inventory
 malaise <- pois_regr("dv_sr_sleep_abn ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-malaise_short <- pois_regr("dv_sr_sleep_short ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-malaise_long <- pois_regr("dv_sr_sleep_long ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+malaise_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(malaise)
-print(malaise_short)
-print(malaise_long)
+print(malaise_multi)
 
 # Behavioural or emotional problems
 beh_emo <- pois_regr("dv_sr_sleep_abn ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-beh_emo_short <- pois_regr("dv_sr_sleep_short ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-beh_emo_long <- pois_regr("dv_sr_sleep_long ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+beh_emo_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(beh_emo)
-print(beh_emo_short)
-print(beh_emo_long)
+print(beh_emo_multi)
 
 # Internalising behaviour in childhood
 int_beh <- pois_regr("dv_sr_sleep_abn ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-int_beh_short <- pois_regr("dv_sr_sleep_short ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-int_beh_long <- pois_regr("dv_sr_sleep_long ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+int_beh_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(int_beh)
-print(int_beh_short)
-print(int_beh_long)
+print(int_beh_multi)
 
 # Externalising behaviour in childhood
 ext_beh <- pois_regr("dv_sr_sleep_abn ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-ext_beh_short <- pois_regr("dv_sr_sleep_short ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-ext_beh_long <- pois_regr("dv_sr_sleep_long ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+ext_beh_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
 
 print(ext_beh)
-print(ext_beh_short)
-print(ext_beh_long)
-
-# Repeating with adult MH variables as controls
-
-# Rutter (age 5)
-rutter_5 <- pois_regr("dv_sr_sleep_abn ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed + BD10MAL + BD10WEMWB + dv_mhprb")
-rutter_5_short <- pois_regr("dv_sr_sleep_short ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed + BD10MAL + BD10WEMWB + dv_mhprb")
-rutter_5_long <- pois_regr("dv_sr_sleep_long ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(rutter_5)
-print(rutter_5_short)
-print(rutter_5_long)
-
-# Rutter (age 10)
-rutter_10 <- pois_regr("dv_sr_sleep_abn ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-rutter_10_short <- pois_regr("dv_sr_sleep_short ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-rutter_10_long <- pois_regr("dv_sr_sleep_long ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(rutter_10)
-print(rutter_10_short)
-print(rutter_10_long)
-
-# Child Development Scale
-cds <- pois_regr("dv_sr_sleep_abn ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-cds_short <- pois_regr("dv_sr_sleep_short ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-cds_long <- pois_regr("dv_sr_sleep_long ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(cds)
-print(cds_short)
-print(cds_long)
-
-# Malaise Inventory
-malaise <- pois_regr("dv_sr_sleep_abn ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-malaise_short <- pois_regr("dv_sr_sleep_short ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-malaise_long <- pois_regr("dv_sr_sleep_long ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(malaise)
-print(malaise_short)
-print(malaise_long)
-
-# Behavioural or emotional problems
-beh_emo <- pois_regr("dv_sr_sleep_abn ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-beh_emo_short <- pois_regr("dv_sr_sleep_short ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-beh_emo_long <- pois_regr("dv_sr_sleep_long ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(beh_emo)
-print(beh_emo_short)
-print(beh_emo_long)
-
-# Internalising behaviour in childhood
-int_beh <- pois_regr("dv_sr_sleep_abn ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-int_beh_short <- pois_regr("dv_sr_sleep_short ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-int_beh_long <- pois_regr("dv_sr_sleep_long ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(int_beh)
-print(int_beh_short)
-print(int_beh_long)
-
-# Externalising behaviour in childhood
-ext_beh <- pois_regr("dv_sr_sleep_abn ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-ext_beh_short <- pois_regr("dv_sr_sleep_short ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-ext_beh_long <- pois_regr("dv_sr_sleep_long ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(ext_beh)
-print(ext_beh_short)
-print(ext_beh_long)
-
-## Sensitivity checks
-# Malaise score (age 16) as a binary variable
-long <- complete(imp_merged, action = "long", include = TRUE)
-long %<>% mutate(dv_binmal = case_when(
-  BD4MAL >= 8 ~ 1,
-  BD4MAL < 8 ~ 0
-))
-imp_merged <- as.mids(long)
-
-# Without adult mental health measures
-malaise <- pois_regr("dv_sr_sleep_abn ~ dv_binmal + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-malaise_short <- pois_regr("dv_sr_sleep_short ~ dv_binmal + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-malaise_long <- pois_regr("dv_sr_sleep_long ~ dv_binmal + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-
-print(malaise)
-print(malaise_short)
-print(malaise_long)
-
-# With adult mental health measures
-malaise <- pois_regr("dv_sr_sleep_abn ~ dv_binmal + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-malaise_short <- pois_regr("dv_sr_sleep_short ~ dv_binmal + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-malaise_long <- pois_regr("dv_sr_sleep_long ~ dv_binmal + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove + BD10MAL + BD10WEMWB + dv_mhprb")
-
-print(malaise)
-print(malaise_short)
-print(malaise_long)
+print(ext_beh_multi)
 ```
