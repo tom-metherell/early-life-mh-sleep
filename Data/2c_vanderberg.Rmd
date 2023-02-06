@@ -22,6 +22,7 @@ library(tidyverse)
 library(magrittr)
 library(chron)
 library(lubridate)
+library(parallel)
 ```
 
 ## Loading data
@@ -240,16 +241,35 @@ df %<>%
 We now follow (with minor variations) the procedure outlined by van der Berg et al. to derive waking time for each participant on each day.
 
 ```{r waketime}
+# Marking as sleeping time any active bouts occurring between 03:00 and 06:00 which are followed by a sedentary bout exceeding 2 hours in duration 
 df %<>%
+  
   # Grouping by participant ID and reference day
   group_by(ParticipantId, refday) %>%
   
-  # Marking as sleeping time any active bouts occurring between 03:00 and 06:00 which are followed by a sedentary bout exceeding 2 hours in duration 
-  mutate(ActivityType = if_else(
-    ActivityType != "Sitting" & StartTime >= times("03:00:00") & EndTime <= times("06:00:00") & any(ActivityType == "Sitting" & StartTime >= EndTime[row_number()] & StartTime < times("12:00:00") & Intervals >= 9000),
-    "Rejected activity",
-    ActivityType
-  )) %>%
+  mutate(
+    # Labelling sedentary bouts exceeding 2 hours and starting between 03:00 and 06:00
+    sed_following = if_else(
+      ActivityType == "Sitting" & StartTime >= times("03:00:00") & StartTime <= times("06:00:00") & Intervals > 7200,
+      TRUE,
+      FALSE
+    ),
+    
+    # Where there is exactly 1 bout labelled sed_following, creating variable encoding the end of that bout
+    sed_end = if_else(
+      sum(sed_following) == 1,
+      if(sum(sed_following) == 1) EndTime[sed_following] else times(NaN),
+      times(NaN)
+    ),
+    
+    # * Where there is more than 1 sedentary bout exceeding 2 hours starting between 03:00 and 06:00, rejecting all activity between 03:00 and 06:00
+    # * Where there is 1 sedentary bout exceeding 2 hours starting between 03:00 and 06:00, rejecting all activity before the end of that bout and before 06:00
+    ActivityType = case_when(
+      sum(sed_following) > 1 & ActivityType != "Sitting" & StartTime >= times("03:00:00") & StartTime <= times("06:00:00") ~ "Rejected activity",
+      sum(sed_following) == 1 & ActivityType != "Sitting" & StartTime >= times("03:00:00") & StartTime <= times("06:00:00") & StartTime < sed_end ~ "Rejected activity",
+      TRUE ~ ActivityType
+    )
+  ) %>%
   
   # Ungrouping
   ungroup()
@@ -281,7 +301,11 @@ df_waketime <- df %>%
     ),
     
     # If there are multiple such bouts, keeping only the first
-    search_start = search_start == 1 & !duplicated(search_start == 1),
+    search_start = if_else(
+      search_start == 1 & !duplicated(search_start == 1),
+      search_start,
+      NA_real_
+    ),
     
     # Replicating the search_start marker
     eligible = search_start
