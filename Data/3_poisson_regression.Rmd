@@ -28,10 +28,19 @@ library(nnet)
 ```
 
 ## Loading the data
-We now load the cleaned BCS70 data.
+We now load the cleaned BCS70 data and prepare them for multiple imputation.
 
 ```{r load_data}
-data_merged <- fread(".\\Cleaned\\data_clean.csv") %>% data.frame(.)
+data_merged <- fread(".\\Cleaned\\data_clean.csv")
+
+# Replacing blank values in character vectors with NA
+is.na(data_merged[,]) <- data_merged[,] == ""
+
+# Linearly rescaling all numeric variables to between 0 and 1 to aid regression model convergence
+data_merged %<>% mutate_if(is.numeric, function(x) (x - min(x, na.rm = TRUE))/(max(x, na.rm = TRUE) - min(x, na.rm = TRUE)))
+
+# Making "normal" the reference category for multinomial regression
+data_merged$dv_sr_sleep_abn_cat %<>% as_factor() %>% relevel("Normal")
 ```
 
 ## Performing multiple imputation
@@ -39,6 +48,8 @@ We can now use the `mice` package to create multiple imputed datasets from the `
 
 ```{r mi}
 # Establishing a cluster for parallel computation to save time
+## NB: THIS SECTION IS CURRENTLY SET TO CREATE AS MANY NODES AS THERE ARE CPU CORES AVAILABLE. THIS MAY CAUSE PROBLEMS IF THERE ARE OTHER TASKS RUNNING SIMULTANEOUSLY
+### if you need to reduce the number, substitute `detectCores()` with e.g. `detectCores() - 2` or `6` in BOTH appearances below
 cl <- makeCluster(detectCores())
 
 # Setting random seed
@@ -50,11 +61,11 @@ clusterExport(cl, "data_merged")
 # Loading the mice package in the cluster environment
 clusterEvalQ(cl, library(mice))
 
-# Running multiple imputation with 10 imputations per core used and a maximum of 10 iterations
-## This code was run with 8 cores and therefore there are 80 imputations in total
+# Running multiple imputation with 1 imputation per core used and a maximum of 1000 iterations
+## This code was run with 8 cores and therefore there are 8 imputations in total
 imp_pars <-
   parLapply(cl = cl, X = 1:detectCores(), fun = function(no){
-    mice(data_merged, m = 10, maxit = 10, printFlag = FALSE)
+    mice(data_merged, m = 1, maxit = 1000, printFlag = FALSE)
   })
 stopCluster(cl)
 
@@ -63,6 +74,9 @@ imp_merged <- imp_pars[[1]]
 for(i in 2:length(imp_pars)){
   imp_merged <- mice::ibind(imp_merged, imp_pars[[i]])
 }
+
+# Plotting trace lines to verify convergence
+plot(imp_merged)
 ```
 
 ## Regression
@@ -71,22 +85,22 @@ We can now perform the regression analyses.
 ```{r regression}
 #######
 # Function : pois_regr
-# Input : formula, a string containing a formula which describes the dependent and independent variables in the form "dep ~ ind1 + ind2 + ind3 + ..."
-# Method : The function fits a modified Poisson regression model to the multiply imputed data according to the specified formula, obtains the risk ratio, confidence intervals and p-values from the model and binds these into a data frame
-# Output : A data frame containing the risk ratios, confidence intervals and p-values obtained from a modified Poisson regression of the specified independent variables against the dependent variable
+# Input : formula, a string containing a formula which describes the dependent and independent variables in the form "dep ~ ind1 + ind2 + ind3 + ..." and var_of_interest, a string containing the variable of interest (e.g. "ind1")
+# Method : The function fits a modified Poisson regression model to the multiply imputed data according to the specified formula, obtains the risk ratio, confidence intervals and p-value from the model and binds these into a data frame
+# Output : A data frame containing the risk ratio, confidence intervals and p-value obtained from a modified Poisson regression of the specified independent variable against the dependent variable, controlling for the other independent variables
 #######
-pois_regr <- function(formula){
+pois_regr <- function(formula, var_of_interest){
   suppressWarnings({
     model_fit <- with(imp_merged, coeftest(glm(as.formula(formula), family = poisson(link = "log"))), vcov. = sandwich)
     results <- summary(pool(model_fit))
     
-    term <- results[, 1]
-    RR <- round(exp(results[, 2]), 3)
-    LCI <- round(exp(results[, 2] + qnorm(0.05/2)*results[, 3]), 3)
-    UCI <- round(exp(results[, 2] - qnorm(0.05/2)*results[, 3]), 3)
-    P <- round(results[, 6], 3)
+    var <- var_of_interest
+    RR <- round(exp(results[results$term == var_of_interest,]$estimate), 3)
+    LCI <- round(exp(results[results$term == var_of_interest,]$estimate + qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error), 3)
+    UCI <- round(exp(results[results$term == var_of_interest,]$estimate - qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error), 3)
+    P <- round(results[results$term == var_of_interest,]$p.value, 3)
     
-    results_frame <- data.frame(term, RR, LCI, UCI, P)
+    results_frame <- data.frame(var, RR, LCI, UCI, P)
     
     return(results_frame)
   })
@@ -94,21 +108,22 @@ pois_regr <- function(formula){
 
 #######
 # Function : multinom_regr
-# Input : formula, a string containing a formula which describes the dependent and independent variables in the form "dep ~ ind1 + ind2 + ind3 + ...". The dependent variable must be a factor
+# Input : formula, a string containing a formula which describes the dependent and independent variables in the form "dep ~ ind1 + ind2 + ind3 + ..." (the dependent variable must be a factor) and var_of_interest, a string containing the variable of interest (e.g. "ind1")
 # Method : The function fits a multinomial logistic regression model to the multiply imputed data according to the specified formula, obtains the relative risk ratios, confidence intervals and p-values from the model and binds these into a data frame
-# Output : A data frame containing the relative risk ratios, confidence intervals and p-values obtained from a multinomial regression of the specified independent variables against the dependent variable
+# Output : A data frame containing the relative risk ratios, confidence intervals and p-values obtained from a multinomial regression of the specified independent variable against the dependent variable, controlling for the other independent variables
 #######
-multinom_regr <- function(formula){
-  model_fit <- with(imp_merged, multinom(as.formula(formula)))
+multinom_regr <- function(formula, var_of_interest){
+  model_fit <- with(imp_merged, multinom(as.formula(formula), maxit = 200))
   results <- summary(pool(model_fit))
   
-  group <- results$lev[-1]
-  RRR <- round(exp(results$coefficients[, 2]), 3)
-  LCI <- round(exp(results$coefficients[, 2] + qnorm(0.05/2)*results$standard.errors[, 2]), 3)
-  UCI <- round(exp(results$coefficients[, 2] - qnorm(0.05/2)*results$standard.errors[, 2]), 3)
-  P <- round((1 - pnorm(abs(results$coefficients[, 2]/results$standard.errors[, 2]), 0, 1)) * 2, 3)
+  var <- results[results$term == var_of_interest,]$term
+  group <- results[results$term == var_of_interest,]$y.level
+  RRR <- round(exp(results[results$term == var_of_interest,]$estimate), 3)
+  LCI <- round(exp(results[results$term == var_of_interest,]$estimate + qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error), 3)
+  UCI <- round(exp(results[results$term == var_of_interest,]$estimate - qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error), 3)
+  P <- round(results[results$term == var_of_interest,]$p.value, 3)
   
-  results_frame <- data.frame(group, RRR, LCI, UCI, P)
+  results_frame <- data.frame(var, group, RRR, LCI, UCI, P)
   
   return(results_frame)
 }
@@ -116,50 +131,50 @@ multinom_regr <- function(formula){
 # Performing regressions against abnormal sleep
 
 # Rutter (age 5)
-rutter_5 <- pois_regr("dv_sr_sleep_abn ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
-rutter_5_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed")
+rutter_5 <- pois_regr("dv_sr_sleep_abn ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed", "d119")
+rutter_5_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ d119 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed", "d119")
 
 print(rutter_5)
 print(rutter_5_multi)
 
 # Rutter (age 10)
-rutter_10 <- pois_regr("dv_sr_sleep_abn ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-rutter_10_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+rutter_10 <- pois_regr("dv_sr_sleep_abn ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "BD3MRUTT")
+rutter_10_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ BD3MRUTT + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "BD3MRUTT")
 
 print(rutter_10)
 print(rutter_10_multi)
 
 # Child Development Scale
-cds <- pois_regr("dv_sr_sleep_abn ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-cds_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+cds <- pois_regr("dv_sr_sleep_abn ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "dv_cds_10")
+cds_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ dv_cds_10 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "dv_cds_10")
 
 print(cds)
 print(cds_multi)
 
 # Malaise Inventory
-malaise <- pois_regr("dv_sr_sleep_abn ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-malaise_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+malaise <- pois_regr("dv_sr_sleep_abn ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "BD4MAL")
+malaise_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ BD4MAL + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "BD4MAL")
 
 print(malaise)
 print(malaise_multi)
 
 # Behavioural or emotional problems
-beh_emo <- pois_regr("dv_sr_sleep_abn ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-beh_emo_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+beh_emo <- pois_regr("dv_sr_sleep_abn ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "rd6m_1")
+beh_emo_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ rd6m_1 + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "rd6m_1")
 
 print(beh_emo)
 print(beh_emo_multi)
 
 # Internalising behaviour in childhood
-int_beh <- pois_regr("dv_sr_sleep_abn ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-int_beh_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+int_beh <- pois_regr("dv_sr_sleep_abn ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "intbcsz")
+int_beh_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ intbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "intbcsz")
 
 print(int_beh)
 print(int_beh_multi)
 
 # Externalising behaviour in childhood
-ext_beh <- pois_regr("dv_sr_sleep_abn ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
-ext_beh_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove")
+ext_beh <- pois_regr("dv_sr_sleep_abn ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "extbcsz")
+ext_beh_multi <- multinom_regr("dv_sr_sleep_abn_cat ~ extbcsz + a0005a + a0043b + a0195a + a0278 + dv_sc_birth + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", "extbcsz")
 
 print(ext_beh)
 print(ext_beh_multi)
