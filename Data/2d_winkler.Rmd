@@ -18,6 +18,7 @@ We start by loading the necessary dependencies.
 
 ```{r dependencies}
 library(parallel)
+library(magrittr)
 library(purrr)
 library(data.table)
 ```
@@ -70,11 +71,10 @@ clusterEvalQ(cl, {
 clusterExport(cl, ls(pattern = "filelist"))
 
 # Applying the algorithm in the cluster
-parLapply(cl = cl, X = 1:detectCores(), fun = function(no){
+df <- parLapply(cl = cl, X = 1:detectCores(), fun = function(no){
   
   # Initialising data frames
-  assign(paste0("df", no),
-         data.frame(ParticipantId = as.integer(), md_winkler_sleepdur = as.double()))
+  df_full <- data.frame(ParticipantId = as.integer(), md_winkler_sleepdur = as.double())
   
   # Looping through participants
   for(i in get(paste0("filelist", no))){
@@ -437,16 +437,22 @@ parLapply(cl = cl, X = 1:detectCores(), fun = function(no){
       mutate(ParticipantId = as.integer(str_sub(i, 1, 6)), .before = md_winkler_sleepdur)
     
     # Appending the participant's value to the running data frame
-    assign(paste0("df", no),
-           rbind(get(paste0("df", no)), df))
+    df_full %<>% rbind(df)
     
     # Removing working data frame
     rm(df)
   }
+  
+  # Output: a data frame containing the results for all of this node's participants
+  return(df_full)
 })
 
 # Stopping cluster
 stopCluster(cl)
+
+# Removing unnecessary cluster object and file lists
+rm(cl)
+rm(list = ls(pattern = "filelist"))
 ```
 
 ## Combining and saving data
@@ -454,7 +460,7 @@ Finally, we can combine the parallel data frames to produce a single complete da
 
 ```{r write}
 # Binding data frames together
-df <- reduce(mget(ls(pattern = "df")), rbind)
+df %<>% reduce(rbind)
 
 # Writing combined data frame to .csv file
 fwrite(df, "winkler_sleep.csv")
