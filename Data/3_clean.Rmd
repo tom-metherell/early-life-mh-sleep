@@ -54,7 +54,11 @@ CLOSER_SES <- read_dta("..\\..\\Data\\Raw\\CLOSER_socioeconomic_measures\\UKDA-8
 # Reading DTA file of response dataset and storing the contents as a data frame
 response <- read_dta("..\\..\\Data\\Raw\\Response_dataset\\UKDA-5641-stata\\stata\\stata13\\bcs70_response_1970-2016.dta")
 
-########## LOAD DERIVED SLEEP VARIABLES
+# Reading derived sleep data files and storing contents of each as a data frame
+activpal <- fread("..\\..\\Data\\Raw\\10b_age_46_sleep_data\\activpal_sleep_bcsid.csv")
+diary <- read_sav("..\\..\\Data\\Raw\\10b_age_46_sleep_data\\diary_cleaned_bcsid.sav")
+vdb <- fread("..\\..\\Data\\Raw\\10b_age_46_sleep_data\\vanderberg_sleep_bcsid.csv")
+winkler <- fread("..\\..\\Data\\Raw\\10b_age_46_sleep_data\\winkler_sleep_bcsid.csv")
 ```
 
 ## Selecting relevant variables
@@ -246,6 +250,19 @@ response %<>% select(
   bcsid, # BCS70 serial number
   contains("OUTCME") # Outcome variables
 )
+
+# Renaming "BCSID" to "bcsid" in sleep variable datasets for consistency
+activpal %<>% rename(bcsid = BCSID)
+diary %<>% rename(bcsid = BCSID)
+vdb %<>% rename(bcsid = BCSID)
+winkler %<>% rename(bcsid = BCSID)
+
+# Sleep diary
+diary %<>% select(
+  bcsid,
+  md_sd_sleepdur, # Median sleep duration
+  md_sleeprate # Median sleep rating
+)
 ```
 
 ## Defining NAs
@@ -397,11 +414,13 @@ We can now merge the individual datasets into a single 'wide' dataset with one r
 # Initialising final dataset by copying over birth data
 data_clean <- birth
 
-########## SLEEP VARIABLES
 # Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
-for(dataset in c("age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response")){
+for(dataset in c("age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response", "activpal", "diary", "vdb", "winkler")){
   data_clean <- full_join(data_clean, get(dataset), by = "bcsid")
 }
+
+# Removing individual datasets
+rm(list = c("birth", "age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response", "activpal", "diary", "vdb", "winkler"))
 ```
 
 ## Deriving exposure variables
@@ -465,7 +484,7 @@ data_clean %<>% mutate(
     md_winkler_sleepdur > 32400 ~ "Long"
   )
 )
-data_clean %<>% select(-B10HSLEEP, -contains("md_"))
+data_clean %<>% select(-B10HSLEEP, -(contains("md_") & !contains("md_sleeprate")))
 ```
 
 ## Deriving control variables
