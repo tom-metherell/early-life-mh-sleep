@@ -367,14 +367,16 @@ packages, for use in further analysis.</p>
 <p>We start by loading the necessary dependencies.</p>
 <pre class="r"><code>library(haven)
 library(tidyverse)</code></pre>
-<pre><code>## ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-## ✔ ggplot2 3.4.0      ✔ purrr   1.0.1 
-## ✔ tibble  3.1.8      ✔ dplyr   1.0.10
-## ✔ tidyr   1.3.0      ✔ stringr 1.5.0 
-## ✔ readr   2.1.3      ✔ forcats 0.5.2 
+<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+## ✔ dplyr     1.1.1     ✔ readr     2.1.4
+## ✔ forcats   1.0.0     ✔ stringr   1.5.0
+## ✔ ggplot2   3.4.1     ✔ tibble    3.2.1
+## ✔ lubridate 1.9.2     ✔ tidyr     1.3.0
+## ✔ purrr     1.0.1     
 ## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 ## ✖ dplyr::filter() masks stats::filter()
-## ✖ dplyr::lag()    masks stats::lag()</code></pre>
+## ✖ dplyr::lag()    masks stats::lag()
+## ℹ Use the ]8;;http://conflicted.r-lib.org/conflicted package]8;; to force all conflicts to become errors</code></pre>
 <pre class="r"><code>library(magrittr)</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;magrittr&#39;
@@ -389,6 +391,11 @@ library(tidyverse)</code></pre>
 <pre class="r"><code>library(data.table)</code></pre>
 <pre><code>## 
 ## Attaching package: &#39;data.table&#39;
+## 
+## The following objects are masked from &#39;package:lubridate&#39;:
+## 
+##     hour, isoweek, mday, minute, month, quarter, second, wday, week,
+##     yday, year
 ## 
 ## The following objects are masked from &#39;package:dplyr&#39;:
 ## 
@@ -419,6 +426,7 @@ age_16school &lt;- read_dta(&quot;..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\
 age_26 &lt;- read_dta(&quot;..\\..\\Data\\Raw\\5_age_26\\UKDA-3833-stata\\stata\\stata11\\bcs96x.dta&quot;)
 age_30 &lt;- read_dta(&quot;..\\..\\Data\\Raw\\6_age_30\\UKDA-5558-stata\\stata\\stata11_se\\bcs2000.dta&quot;)
 age_42 &lt;- read_dta(&quot;..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_flatfile.dta&quot;)
+age_42dv &lt;- read_dta(&quot;..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_derived.dta&quot;)
 age_46 &lt;- read_dta(&quot;..\\..\\Data\\Raw\\10_age_46\\UKDA-8547-stata\\stata\\stata11\\bcs_age46_main.dta&quot;)
 
 # Reading DTA files containing data from CLOSER WPs 1, 2 and 9
@@ -439,7 +447,8 @@ winkler &lt;- fread(&quot;..\\..\\Data\\Raw\\10b_age_46_sleep_data\\winkler_slee
 <div id="selecting-relevant-variables" class="section level2">
 <h2>Selecting relevant variables</h2>
 <p>We now select the variables relevant to our analyses (see study
-protocol), discarding the unnecessary data.</p>
+protocol), discarding the unnecessary data. Asterisks (*) mark auxiliary
+variables.</p>
 <pre class="r"><code># Birth sweep data
 birth %&lt;&gt;% select(
   bcsid, # BCS70 serial number
@@ -465,8 +474,7 @@ age_5d %&lt;&gt;% select(
 age_5e %&lt;&gt;% select(
   bcsid, # BCS70 serial number
   e067:e076, # Medical conditions
-  e191, # Age mother left school
-  e192, # Age father left school
+  e192, # Age father left school*
   e197, # Father&#39;s social class
   e206, # Mother&#39;s social class
   e216a, # Mother&#39;s regular job since child&#39;s birth
@@ -493,12 +501,11 @@ age_5dv %&lt;&gt;% select(
 # Age 10 sweep data
 age_10 %&lt;&gt;% select(
   bcsid, # BCS70 serial number
-  c3_11, # Mother&#39;s corrected social class
-  c9_1:c9_7, # Total family income
   i3504:i3540, # BAS word definitions
   i3541:i3574, # BAS recall of digits
   i3617:i3644, # BAS matrices
   i4201:i4221, # BAS word similarities (derived)
+  j111, # Total days missed schooling*
   j127:j178b, # Child Development Scale
   m84:m101, # Positive activities outside school*
   meb4_1, meb4_6, meb4_16, meb4_21, meb4_26, meb4_46, meb4_51, # Medical conditions (present)
@@ -538,7 +545,6 @@ age_16dv %&lt;&gt;% rename(bcsid = BCSID)
 age_16dv %&lt;&gt;% select(
   bcsid, # BCS70 serial number
   BD4MAL, # Total Malaise score
-  BD4RUTT # Total Rutter behaviour score
 )
 
 # Renaming &quot;BCSID&quot; to &quot;bcsid&quot; in age_16school for consistency
@@ -560,8 +566,9 @@ age_30 %&lt;&gt;% select(
   vote97 # Voted in 1997 General Election*
 )
 
-# Renaming &quot;BCSID&quot; to &quot;bcsid&quot; in age_42 for consistency
+# Renaming &quot;BCSID&quot; to &quot;bcsid&quot; in age_42 and age_42dv for consistency
 age_42 %&lt;&gt;% rename(bcsid = BCSID)
+age_42dv %&lt;&gt;% rename(bcsid = BCSID)
 
 # Age 42 sweep data
 age_42 %&lt;&gt;% select(
@@ -570,7 +577,14 @@ age_42 %&lt;&gt;% select(
   contains(&quot;B9SCQ8&quot;), # Organisational membership*
   B9SCQ17, # Computer ownership*
   B9SCQ19, # Number of cars or vans owned*
-  B9TEN # Housing tenure*
+  B9TEN, # Housing tenure*
+)
+
+# Age 42 derived variables
+age_42dv %&lt;&gt;% select(
+  bcsid, # BCS70 serial number
+  BD9MAL, # Malaise score
+  BD9WEMWB # Warwick Edinburgh Mental Well-Being Scale
 )
 
 # Renaming &quot;BCSID&quot; to &quot;bcsid&quot; in age_46 for consistency
@@ -579,12 +593,7 @@ age_46 %&lt;&gt;% rename(bcsid = BCSID)
 # Age 46 sweep data
 age_46 %&lt;&gt;% select(
   bcsid, # BCS70 serial number
-  B10HSLEEP, # Average number of hours of sleep per night
-  BD10ENFA, # Energy/fatigue score
-  BD10MAL, # Total Malaise score
-  BD10MBMI, # Body mass index (nurse-measured)
-  contains(&quot;B10MHPRB&quot;), # Seen Dr/specialist for mental health problems
-  BD10WEMWB # Warwick Edinburgh Mental Well-Being Scale
+  B10HSLEEP # Average number of hours of sleep per night
 )
 
 # CLOSER WP9 data
@@ -660,10 +669,6 @@ is.na(age_5f[c(&quot;f121&quot;, &quot;f122&quot;)]) &lt;- age_5f[c(&quot;f121&q
 # Age 5 dataset (derived): -1 becomes NA
 is.na(age_5dv[,]) &lt;- age_5dv[,] == -1
 
-# Age 10 dataset (mother&#39;s social class only): negative values and values more than 7 become NA
-is.na(age_10[, &quot;c3_11&quot;]) &lt;- age_10[, &quot;c3_11&quot;] &lt; 0
-is.na(age_10[, &quot;c3_11&quot;]) &lt;- age_10[, &quot;c3_11&quot;] &gt; 7
-
 # Age 10 dataset (CDS, positive activities): negative values become NA
 is.na(age_10[, grep(&quot;j127&quot;, names(age_10)):grep(&quot;j178b&quot;, names(age_10))]) &lt;- age_10[, grep(&quot;j127&quot;, names(age_10)):grep(&quot;j178b&quot;, names(age_10))] &lt; 0
 is.na(age_10[, grep(&quot;m84&quot;, names(age_10)):grep(&quot;m101&quot;, names(age_10))]) &lt;- age_10[, grep(&quot;m84&quot;, names(age_10)):grep(&quot;m101&quot;, names(age_10))] &lt; 0
@@ -691,6 +696,9 @@ is.na(age_30[c(&quot;aptrain&quot;, &quot;wrktrain&quot;, &quot;emosup&quot;, &q
 
 # Age 42 dataset: negative values become NA
 is.na(age_42[,]) &lt;- age_42[,] &lt; 0
+
+# Age 42 derived variables dataset: negative values become NA
+is.na(age_42dv[,]) &lt;- age_42dv[,] &lt; 0
 
 # Age 46 dataset: negative values become NA
 is.na(age_46[,]) &lt;- age_46[,] &lt; 0
@@ -763,9 +771,19 @@ age_10 %&lt;&gt;% mutate(
     tests10 == 1 ~ rowSums(across(i4201:i4221, `==`, 1)),
     tests10 == 0 ~ NA_real_
   )
-)
-
-# Performing principal component analysis
+)</code></pre>
+<pre><code>## Warning: There was 1 warning in `mutate()`.
+## ℹ In argument: `dv_bas_worddef = case_when(...)`.
+## Caused by warning:
+## ! The `...` argument of `across()` is deprecated as of dplyr 1.1.0.
+## Supply arguments directly to `.fns` through an anonymous function instead.
+## 
+##   # Previously
+##   across(a:b, mean, na.rm = TRUE)
+## 
+##   # Now
+##   across(a:b, \(x) mean(x, na.rm = TRUE))</code></pre>
+<pre class="r"><code># Performing principal component analysis
 pca &lt;- prcomp(age_10[age_10$tests10 == 1,] %&gt;% select(contains(&quot;dv_bas&quot;)), center = TRUE, scale. = TRUE)
 
 # Initialising derived cognitive ability score variable
@@ -792,12 +810,16 @@ with one row per participant.</p>
 data_clean &lt;- birth
 
 # Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
-for(dataset in c(&quot;age_5d&quot;, &quot;age_5e&quot;, &quot;age_5f&quot;, &quot;age_10&quot;, &quot;age_10dv&quot;, &quot;age_16&quot;, &quot;age_16arith&quot;, &quot;age_16dv&quot;, &quot;age_16school&quot;, &quot;age_26&quot;, &quot;age_30&quot;, &quot;age_42&quot;, &quot;age_46&quot;, &quot;CLOSER_env&quot;, &quot;CLOSER_BMI&quot;, &quot;CLOSER_SES&quot;, &quot;response&quot;, &quot;activpal&quot;, &quot;diary&quot;, &quot;vdb&quot;, &quot;winkler&quot;)){
+for(dataset in c(&quot;age_5d&quot;, &quot;age_5e&quot;, &quot;age_5f&quot;, &quot;age_10&quot;, &quot;age_10dv&quot;, &quot;age_16&quot;, &quot;age_16arith&quot;, &quot;age_16dv&quot;, &quot;age_16school&quot;, &quot;age_26&quot;, &quot;age_30&quot;, &quot;age_42&quot;, &quot;age_42dv&quot;, &quot;age_46&quot;, &quot;CLOSER_env&quot;, &quot;CLOSER_BMI&quot;, &quot;CLOSER_SES&quot;, &quot;response&quot;, &quot;activpal&quot;, &quot;diary&quot;, &quot;vdb&quot;, &quot;winkler&quot;)){
   data_clean &lt;- full_join(data_clean, get(dataset), by = &quot;bcsid&quot;)
-}
-
-# Removing individual datasets
-rm(list = c(&quot;birth&quot;, &quot;age_5d&quot;, &quot;age_5e&quot;, &quot;age_5f&quot;, &quot;age_10&quot;, &quot;age_10dv&quot;, &quot;age_16&quot;, &quot;age_16arith&quot;, &quot;age_16dv&quot;, &quot;age_16school&quot;, &quot;age_26&quot;, &quot;age_30&quot;, &quot;age_42&quot;, &quot;age_46&quot;, &quot;CLOSER_env&quot;, &quot;CLOSER_BMI&quot;, &quot;CLOSER_SES&quot;, &quot;response&quot;, &quot;activpal&quot;, &quot;diary&quot;, &quot;vdb&quot;, &quot;winkler&quot;))</code></pre>
+}</code></pre>
+<pre><code>## Warning in full_join(data_clean, get(dataset), by = &quot;bcsid&quot;): Detected an unexpected many-to-many relationship between `x` and `y`.
+## ℹ Row 2221 of `x` matches multiple rows in `y`.
+## ℹ Row 136 of `y` matches multiple rows in `x`.
+## ℹ If a many-to-many relationship is expected, set `relationship =
+##   &quot;many-to-many&quot;` to silence this warning.</code></pre>
+<pre class="r"><code># Removing individual datasets
+rm(list = c(&quot;birth&quot;, &quot;age_5d&quot;, &quot;age_5e&quot;, &quot;age_5f&quot;, &quot;age_10&quot;, &quot;age_10dv&quot;, &quot;age_16&quot;, &quot;age_16arith&quot;, &quot;age_16dv&quot;, &quot;age_16school&quot;, &quot;age_26&quot;, &quot;age_30&quot;, &quot;age_42&quot;, &quot;age_42dv&quot;, &quot;age_46&quot;, &quot;CLOSER_env&quot;, &quot;CLOSER_BMI&quot;, &quot;CLOSER_SES&quot;, &quot;response&quot;, &quot;activpal&quot;, &quot;diary&quot;, &quot;vdb&quot;, &quot;winkler&quot;))</code></pre>
 </div>
 <div id="deriving-exposure-variables" class="section level2">
 <h2>Deriving exposure variables</h2>
@@ -818,41 +840,41 @@ data_clean %&lt;&gt;% mutate(
     B10HSLEEP &lt; 6 | B10HSLEEP &gt; 9 ~ 1,
     B10HSLEEP &gt;= 6 &amp; B10HSLEEP &lt;= 9 ~ 0
   ),
+  dv_sd_sleep_abn = case_when(
+    md_sd_sleepdur &lt; 360 | md_sd_sleepdur &gt; 540 ~ 1,
+    md_sd_sleepdur &gt;= 360 &amp; md_sd_sleepdur &lt;= 540 ~ 0
+  ),
+  dv_pal_sleep_abn = case_when(
+    md_pal_sleepdur &lt; 21600 | md_pal_sleepdur &gt; 32400 ~ 1,
+    md_pal_sleepdur &gt;= 21600 &amp; md_pal_sleepdur &lt;= 32400 ~ 0
+  ),
+  dv_vdb_sleep_abn = case_when(
+    md_vdb_sleepdur &lt; 21600 | md_vdb_sleepdur &gt; 32400 ~ 1,
+    md_vdb_sleepdur &gt;= 21600 &amp; md_vdb_sleepdur &lt;= 32400 ~ 0
+  ),
+  dv_winkler_sleep_abn = case_when(
+    md_winkler_sleepdur &lt; 21600 | md_winkler_sleepdur &gt; 32400 ~ 1,
+    md_winkler_sleepdur &gt;= 21600 &amp; md_winkler_sleepdur &lt;= 32400 ~ 0
+  ),
   dv_sr_sleep_abn_cat = case_when(
     B10HSLEEP &gt;= 6 &amp; B10HSLEEP &lt;= 9 ~ &quot;Normal&quot;,
     B10HSLEEP &lt; 6 ~ &quot;Short&quot;,
     B10HSLEEP &gt; 9 ~ &quot;Long&quot;
-  ),
-  dv_sd_sleep_abn = case_when(
-    md_sd_sleepdur &lt; 360 | md_sd_sleepdur &gt; 540 ~ 1,
-    md_sd_sleepdur &gt;= 360 &amp; md_sd_sleepdur &lt;= 540 ~ 0
   ),
   dv_sd_sleep_abn_cat = case_when(
     md_sd_sleepdur &gt;= 360 &amp; md_sd_sleepdur &lt;= 540 ~ &quot;Normal&quot;,
     md_sd_sleepdur &lt; 360 ~ &quot;Short&quot;,
     md_sd_sleepdur &gt; 540 ~ &quot;Long&quot;
   ),
-  dv_pal_sleep_abn = case_when(
-    md_pal_sleepdur &lt; 21600 | md_pal_sleepdur &gt; 32400 ~ 1,
-    md_pal_sleepdur &gt;= 21600 &amp; md_pal_sleepdur &lt;= 32400 ~ 0
-  ),
   dv_pal_sleep_abn_cat = case_when(
     md_pal_sleepdur &gt;= 21600 &amp; md_pal_sleepdur &lt;= 32400 ~ &quot;Normal&quot;,
     md_pal_sleepdur &lt; 21600 ~ &quot;Short&quot;,
     md_pal_sleepdur &gt; 32400 ~ &quot;Long&quot;
   ),
-  dv_vdb_sleep_abn = case_when(
-    md_vdb_sleepdur &lt; 21600 | md_vdb_sleepdur &gt; 32400 ~ 1,
-    md_vdb_sleepdur &gt;= 21600 &amp; md_vdb_sleepdur &lt;= 32400 ~ 0
-  ),
   dv_vdb_sleep_abn_cat = case_when(
     md_vdb_sleepdur &gt;= 21600 &amp; md_vdb_sleepdur &lt;= 32400 ~ &quot;Normal&quot;,
     md_vdb_sleepdur &lt; 21600 ~ &quot;Short&quot;,
     md_vdb_sleepdur &gt; 32400 ~ &quot;Long&quot;
-  ),
-  dv_winkler_sleep_abn = case_when(
-    md_winkler_sleepdur &lt; 21600 | md_winkler_sleepdur &gt; 32400 ~ 1,
-    md_winkler_sleepdur &gt;= 21600 &amp; md_winkler_sleepdur &lt;= 32400 ~ 0
   ),
   dv_winkler_sleep_abn_cat = case_when(
     md_winkler_sleepdur &gt;= 21600 &amp; md_winkler_sleepdur &lt;= 32400 ~ &quot;Normal&quot;,
@@ -866,19 +888,9 @@ data_clean %&lt;&gt;% select(-B10HSLEEP, -(contains(&quot;md_&quot;) &amp; !cont
 <h2>Deriving control variables</h2>
 <p>… and the controls. Many variables also need to be recoded as
 factors.</p>
-<pre class="r"><code># Storing paternal social class at birth as a separate variable
-data_clean %&lt;&gt;% mutate(dv_sc_birth = a0014)
-
-# Recoding &quot;other&quot;/&quot;unsupported&quot; values as missing in a0014 for use as an auxiliary variable
-is.na(data_clean[c(&quot;a0014&quot;)]) &lt;- data_clean[c(&quot;a0014&quot;)] &gt; 6
-
-# Deriving maximum parental education at birth and removing individual variables
+<pre class="r"><code># Deriving maximum parental education at birth and removing individual variables
 data_clean %&lt;&gt;% rowwise() %&gt;% mutate(dv_par_edu_birth = max(a0009, a0010))
 data_clean %&lt;&gt;% select(-a0009, -a0010)
-
-# Deriving maximum parental education at age 5 and removing mother variable
-data_clean %&lt;&gt;% rowwise() %&gt;% mutate(dv_par_edu_5 = max(e191, e192))
-data_clean %&lt;&gt;% select(-e191)
 
 # Recoding father&#39;s education as a binary factor variable for use as an auxiliary variable
 data_clean %&lt;&gt;% mutate(dv_father_schl = case_when(
@@ -904,18 +916,6 @@ data_clean %&lt;&gt;% mutate(dv_med_10 = case_when(
   if_all(meb4_1:meb4_51, ~ is.na(.)) &amp; if_any(meb4_2:meb4_54, ~. == 1) ~ 0
 ))
 data_clean %&lt;&gt;% select(-(meb4_1:meb4_51), -(meb4_2:meb4_54))
-
-# Combining age 10 income variables into a single variable and removing individual variables
-data_clean %&lt;&gt;% mutate(dv_income_10 = case_when(
-  c9_1 == 1 ~ 1,
-  c9_2 == 1 ~ 2,
-  c9_3 == 1 ~ 3,
-  c9_4 == 1 ~ 4,
-  c9_5 == 1 ~ 5,
-  c9_6 == 1 ~ 6,
-  c9_7 == 1 ~ 7
-))
-data_clean %&lt;&gt;% select(-contains(&quot;c9&quot;))
 
 # Deriving maximum parental social class at age 16 and removing individual variables
 data_clean %&lt;&gt;% rowwise() %&gt;% mutate(dv_sc_age_16 = min(t11_2, t11_9))
@@ -994,15 +994,8 @@ data_clean %&lt;&gt;% mutate(B9TEN = case_when(
   B9TEN %in% c(3, 4, 5, 7) ~ &quot;Not owned&quot;
 ))
 
-# Recoding &quot;seen Dr/specialist for mental health problems&quot; into a single binary variable and removing individual variables
-data_clean %&lt;&gt;% mutate(dv_mhprb = case_when(
-  if_any(B10MHPRB1:B10MHPRB6, ~. == 1) ~ 1,
-  if_all(B10MHPRB1:B10MHPRB6, ~. == 2) ~ 0
-))
-data_clean %&lt;&gt;% select(-(B10MHPRB1:B10MHPRB6))
-
 # Recoding labelled variables as factors, taking the values of the data labels
-data_clean[c(&quot;a0014&quot;, &quot;a0043b&quot;, &quot;a0255&quot;, &quot;e216a&quot;, &quot;c3_11&quot;, &quot;BDSTYPE&quot;, &quot;B9TEN&quot;, &quot;ameni&quot;, &quot;brfed&quot;, &quot;crowd&quot;, &quot;resmove&quot;, &quot;tenure&quot;, &quot;fclrg90&quot;, &quot;dv_sc_birth&quot;, &quot;dv_sc_age_5&quot;, &quot;dv_sc_age_16&quot;, &quot;dv_incsource&quot;, &quot;dv_marital&quot;)] %&lt;&gt;% as_factor(., only_labelled = FALSE)
+data_clean[c(&quot;a0014&quot;, &quot;a0043b&quot;, &quot;a0255&quot;, &quot;e216a&quot;, &quot;BDSTYPE&quot;, &quot;B9TEN&quot;, &quot;ameni&quot;, &quot;brfed&quot;, &quot;crowd&quot;, &quot;resmove&quot;, &quot;tenure&quot;, &quot;fclrg90&quot;, &quot;dv_sc_age_5&quot;, &quot;dv_sc_age_16&quot;, &quot;dv_incsource&quot;, &quot;dv_marital&quot;)] %&lt;&gt;% as_factor(., only_labelled = FALSE)
 
 # Removing Stata-format data labels which are incompatible with further cleaning and analysis steps
 data_clean %&lt;&gt;% zap_labels(.)

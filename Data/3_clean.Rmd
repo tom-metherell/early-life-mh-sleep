@@ -43,6 +43,7 @@ age_16school <- read_dta("..\\..\\Data\\Raw\\4_age_16\\UKDA-3535-stata\\stata\\s
 age_26 <- read_dta("..\\..\\Data\\Raw\\5_age_26\\UKDA-3833-stata\\stata\\stata11\\bcs96x.dta")
 age_30 <- read_dta("..\\..\\Data\\Raw\\6_age_30\\UKDA-5558-stata\\stata\\stata11_se\\bcs2000.dta")
 age_42 <- read_dta("..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_flatfile.dta")
+age_42dv <- read_dta("..\\..\\Data\\Raw\\9_age_42\\UKDA-7473-stata\\stata\\stata13\\bcs70_2012_derived.dta")
 age_46 <- read_dta("..\\..\\Data\\Raw\\10_age_46\\UKDA-8547-stata\\stata\\stata11\\bcs_age46_main.dta")
 
 # Reading DTA files containing data from CLOSER WPs 1, 2 and 9
@@ -62,7 +63,7 @@ winkler <- fread("..\\..\\Data\\Raw\\10b_age_46_sleep_data\\winkler_sleep_bcsid.
 ```
 
 ## Selecting relevant variables
-We now select the variables relevant to our analyses (see study protocol), discarding the unnecessary data.
+We now select the variables relevant to our analyses (see study protocol), discarding the unnecessary data. Asterisks (*) mark auxiliary variables.
 
 ```{r select_vars}
 # Birth sweep data
@@ -90,8 +91,7 @@ age_5d %<>% select(
 age_5e %<>% select(
   bcsid, # BCS70 serial number
   e067:e076, # Medical conditions
-  e191, # Age mother left school
-  e192, # Age father left school
+  e192, # Age father left school*
   e197, # Father's social class
   e206, # Mother's social class
   e216a, # Mother's regular job since child's birth
@@ -118,12 +118,11 @@ age_5dv %<>% select(
 # Age 10 sweep data
 age_10 %<>% select(
   bcsid, # BCS70 serial number
-  c3_11, # Mother's corrected social class
-  c9_1:c9_7, # Total family income
   i3504:i3540, # BAS word definitions
   i3541:i3574, # BAS recall of digits
   i3617:i3644, # BAS matrices
   i4201:i4221, # BAS word similarities (derived)
+  j111, # Total days missed schooling*
   j127:j178b, # Child Development Scale
   m84:m101, # Positive activities outside school*
   meb4_1, meb4_6, meb4_16, meb4_21, meb4_26, meb4_46, meb4_51, # Medical conditions (present)
@@ -163,7 +162,6 @@ age_16dv %<>% rename(bcsid = BCSID)
 age_16dv %<>% select(
   bcsid, # BCS70 serial number
   BD4MAL, # Total Malaise score
-  BD4RUTT # Total Rutter behaviour score
 )
 
 # Renaming "BCSID" to "bcsid" in age_16school for consistency
@@ -185,8 +183,9 @@ age_30 %<>% select(
   vote97 # Voted in 1997 General Election*
 )
 
-# Renaming "BCSID" to "bcsid" in age_42 for consistency
+# Renaming "BCSID" to "bcsid" in age_42 and age_42dv for consistency
 age_42 %<>% rename(bcsid = BCSID)
+age_42dv %<>% rename(bcsid = BCSID)
 
 # Age 42 sweep data
 age_42 %<>% select(
@@ -195,7 +194,14 @@ age_42 %<>% select(
   contains("B9SCQ8"), # Organisational membership*
   B9SCQ17, # Computer ownership*
   B9SCQ19, # Number of cars or vans owned*
-  B9TEN # Housing tenure*
+  B9TEN, # Housing tenure*
+)
+
+# Age 42 derived variables
+age_42dv %<>% select(
+  bcsid, # BCS70 serial number
+  BD9MAL, # Malaise score
+  BD9WEMWB # Warwick Edinburgh Mental Well-Being Scale
 )
 
 # Renaming "BCSID" to "bcsid" in age_46 for consistency
@@ -204,12 +210,7 @@ age_46 %<>% rename(bcsid = BCSID)
 # Age 46 sweep data
 age_46 %<>% select(
   bcsid, # BCS70 serial number
-  B10HSLEEP, # Average number of hours of sleep per night
-  BD10ENFA, # Energy/fatigue score
-  BD10MAL, # Total Malaise score
-  BD10MBMI, # Body mass index (nurse-measured)
-  contains("B10MHPRB"), # Seen Dr/specialist for mental health problems
-  BD10WEMWB # Warwick Edinburgh Mental Well-Being Scale
+  B10HSLEEP # Average number of hours of sleep per night
 )
 
 # CLOSER WP9 data
@@ -285,10 +286,6 @@ is.na(age_5f[c("f121", "f122")]) <- age_5f[c("f121", "f122")] == -5
 # Age 5 dataset (derived): -1 becomes NA
 is.na(age_5dv[,]) <- age_5dv[,] == -1
 
-# Age 10 dataset (mother's social class only): negative values and values more than 7 become NA
-is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] < 0
-is.na(age_10[, "c3_11"]) <- age_10[, "c3_11"] > 7
-
 # Age 10 dataset (CDS, positive activities): negative values become NA
 is.na(age_10[, grep("j127", names(age_10)):grep("j178b", names(age_10))]) <- age_10[, grep("j127", names(age_10)):grep("j178b", names(age_10))] < 0
 is.na(age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))]) <- age_10[, grep("m84", names(age_10)):grep("m101", names(age_10))] < 0
@@ -316,6 +313,9 @@ is.na(age_30[c("aptrain", "wrktrain", "emosup", "hospital", "vote97")]) <- age_3
 
 # Age 42 dataset: negative values become NA
 is.na(age_42[,]) <- age_42[,] < 0
+
+# Age 42 derived variables dataset: negative values become NA
+is.na(age_42dv[,]) <- age_42dv[,] < 0
 
 # Age 46 dataset: negative values become NA
 is.na(age_46[,]) <- age_46[,] < 0
@@ -415,12 +415,12 @@ We can now merge the individual datasets into a single 'wide' dataset with one r
 data_clean <- birth
 
 # Joining each of the other datasets in turn to the final dataset using the BCS70 serial numbers of the participants
-for(dataset in c("age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response", "activpal", "diary", "vdb", "winkler")){
+for(dataset in c("age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_42dv", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response", "activpal", "diary", "vdb", "winkler")){
   data_clean <- full_join(data_clean, get(dataset), by = "bcsid")
 }
 
 # Removing individual datasets
-rm(list = c("birth", "age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response", "activpal", "diary", "vdb", "winkler"))
+rm(list = c("birth", "age_5d", "age_5e", "age_5f", "age_10", "age_10dv", "age_16", "age_16arith", "age_16dv", "age_16school", "age_26", "age_30", "age_42", "age_42dv", "age_46", "CLOSER_env", "CLOSER_BMI", "CLOSER_SES", "response", "activpal", "diary", "vdb", "winkler"))
 ```
 
 ## Deriving exposure variables
@@ -442,41 +442,41 @@ data_clean %<>% mutate(
     B10HSLEEP < 6 | B10HSLEEP > 9 ~ 1,
     B10HSLEEP >= 6 & B10HSLEEP <= 9 ~ 0
   ),
+  dv_sd_sleep_abn = case_when(
+    md_sd_sleepdur < 360 | md_sd_sleepdur > 540 ~ 1,
+    md_sd_sleepdur >= 360 & md_sd_sleepdur <= 540 ~ 0
+  ),
+  dv_pal_sleep_abn = case_when(
+    md_pal_sleepdur < 21600 | md_pal_sleepdur > 32400 ~ 1,
+    md_pal_sleepdur >= 21600 & md_pal_sleepdur <= 32400 ~ 0
+  ),
+  dv_vdb_sleep_abn = case_when(
+    md_vdb_sleepdur < 21600 | md_vdb_sleepdur > 32400 ~ 1,
+    md_vdb_sleepdur >= 21600 & md_vdb_sleepdur <= 32400 ~ 0
+  ),
+  dv_winkler_sleep_abn = case_when(
+    md_winkler_sleepdur < 21600 | md_winkler_sleepdur > 32400 ~ 1,
+    md_winkler_sleepdur >= 21600 & md_winkler_sleepdur <= 32400 ~ 0
+  ),
   dv_sr_sleep_abn_cat = case_when(
     B10HSLEEP >= 6 & B10HSLEEP <= 9 ~ "Normal",
     B10HSLEEP < 6 ~ "Short",
     B10HSLEEP > 9 ~ "Long"
-  ),
-  dv_sd_sleep_abn = case_when(
-    md_sd_sleepdur < 360 | md_sd_sleepdur > 540 ~ 1,
-    md_sd_sleepdur >= 360 & md_sd_sleepdur <= 540 ~ 0
   ),
   dv_sd_sleep_abn_cat = case_when(
     md_sd_sleepdur >= 360 & md_sd_sleepdur <= 540 ~ "Normal",
     md_sd_sleepdur < 360 ~ "Short",
     md_sd_sleepdur > 540 ~ "Long"
   ),
-  dv_pal_sleep_abn = case_when(
-    md_pal_sleepdur < 21600 | md_pal_sleepdur > 32400 ~ 1,
-    md_pal_sleepdur >= 21600 & md_pal_sleepdur <= 32400 ~ 0
-  ),
   dv_pal_sleep_abn_cat = case_when(
     md_pal_sleepdur >= 21600 & md_pal_sleepdur <= 32400 ~ "Normal",
     md_pal_sleepdur < 21600 ~ "Short",
     md_pal_sleepdur > 32400 ~ "Long"
   ),
-  dv_vdb_sleep_abn = case_when(
-    md_vdb_sleepdur < 21600 | md_vdb_sleepdur > 32400 ~ 1,
-    md_vdb_sleepdur >= 21600 & md_vdb_sleepdur <= 32400 ~ 0
-  ),
   dv_vdb_sleep_abn_cat = case_when(
     md_vdb_sleepdur >= 21600 & md_vdb_sleepdur <= 32400 ~ "Normal",
     md_vdb_sleepdur < 21600 ~ "Short",
     md_vdb_sleepdur > 32400 ~ "Long"
-  ),
-  dv_winkler_sleep_abn = case_when(
-    md_winkler_sleepdur < 21600 | md_winkler_sleepdur > 32400 ~ 1,
-    md_winkler_sleepdur >= 21600 & md_winkler_sleepdur <= 32400 ~ 0
   ),
   dv_winkler_sleep_abn_cat = case_when(
     md_winkler_sleepdur >= 21600 & md_winkler_sleepdur <= 32400 ~ "Normal",
@@ -491,19 +491,9 @@ data_clean %<>% select(-B10HSLEEP, -(contains("md_") & !contains("md_sleeprate")
 ... and the controls. Many variables also need to be recoded as factors.
 
 ```{r control_variables}
-# Storing paternal social class at birth as a separate variable
-data_clean %<>% mutate(dv_sc_birth = a0014)
-
-# Recoding "other"/"unsupported" values as missing in a0014 for use as an auxiliary variable
-is.na(data_clean[c("a0014")]) <- data_clean[c("a0014")] > 6
-
 # Deriving maximum parental education at birth and removing individual variables
 data_clean %<>% rowwise() %>% mutate(dv_par_edu_birth = max(a0009, a0010))
 data_clean %<>% select(-a0009, -a0010)
-
-# Deriving maximum parental education at age 5 and removing mother variable
-data_clean %<>% rowwise() %>% mutate(dv_par_edu_5 = max(e191, e192))
-data_clean %<>% select(-e191)
 
 # Recoding father's education as a binary factor variable for use as an auxiliary variable
 data_clean %<>% mutate(dv_father_schl = case_when(
@@ -529,18 +519,6 @@ data_clean %<>% mutate(dv_med_10 = case_when(
   if_all(meb4_1:meb4_51, ~ is.na(.)) & if_any(meb4_2:meb4_54, ~. == 1) ~ 0
 ))
 data_clean %<>% select(-(meb4_1:meb4_51), -(meb4_2:meb4_54))
-
-# Combining age 10 income variables into a single variable and removing individual variables
-data_clean %<>% mutate(dv_income_10 = case_when(
-  c9_1 == 1 ~ 1,
-  c9_2 == 1 ~ 2,
-  c9_3 == 1 ~ 3,
-  c9_4 == 1 ~ 4,
-  c9_5 == 1 ~ 5,
-  c9_6 == 1 ~ 6,
-  c9_7 == 1 ~ 7
-))
-data_clean %<>% select(-contains("c9"))
 
 # Deriving maximum parental social class at age 16 and removing individual variables
 data_clean %<>% rowwise() %>% mutate(dv_sc_age_16 = min(t11_2, t11_9))
@@ -619,15 +597,8 @@ data_clean %<>% mutate(B9TEN = case_when(
   B9TEN %in% c(3, 4, 5, 7) ~ "Not owned"
 ))
 
-# Recoding "seen Dr/specialist for mental health problems" into a single binary variable and removing individual variables
-data_clean %<>% mutate(dv_mhprb = case_when(
-  if_any(B10MHPRB1:B10MHPRB6, ~. == 1) ~ 1,
-  if_all(B10MHPRB1:B10MHPRB6, ~. == 2) ~ 0
-))
-data_clean %<>% select(-(B10MHPRB1:B10MHPRB6))
-
 # Recoding labelled variables as factors, taking the values of the data labels
-data_clean[c("a0014", "a0043b", "a0255", "e216a", "c3_11", "BDSTYPE", "B9TEN", "ameni", "brfed", "crowd", "resmove", "tenure", "fclrg90", "dv_sc_birth", "dv_sc_age_5", "dv_sc_age_16", "dv_incsource", "dv_marital")] %<>% as_factor(., only_labelled = FALSE)
+data_clean[c("a0014", "a0043b", "a0255", "e216a", "BDSTYPE", "B9TEN", "ameni", "brfed", "crowd", "resmove", "tenure", "fclrg90", "dv_sc_age_5", "dv_sc_age_16", "dv_incsource", "dv_marital")] %<>% as_factor(., only_labelled = FALSE)
 
 # Removing Stata-format data labels which are incompatible with further cleaning and analysis steps
 data_clean %<>% zap_labels(.)
