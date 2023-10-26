@@ -1,0 +1,2751 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   class="svglite"
+   width="595.28pt"
+   height="841.89pt"
+   viewBox="0 0 595.28 841.89"
+   version="1.1"
+   id="svg7441"
+   sodipodi:docname="med_forestplots.svg"
+   inkscape:export-filename="med_forestplots.png"
+   inkscape:export-xdpi="600"
+   inkscape:export-ydpi="600"
+   inkscape:version="1.2.2 (732a01da63, 2022-12-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview7443"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="pt"
+     showgrid="false"
+     inkscape:zoom="0.71624558"
+     inkscape:cx="299.47829"
+     inkscape:cy="561.95809"
+     inkscape:window-width="1920"
+     inkscape:window-height="991"
+     inkscape:window-x="-9"
+     inkscape:window-y="-9"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg7441" />
+  <defs
+     id="defs6640">
+    <style
+       type="text/css"
+       id="style6638"><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+    .svglite text {
+      white-space: pre;
+    }
+  ]]></style>
+  </defs>
+  <rect
+     width="100%"
+     height="100%"
+     style="stroke: none; fill: #FFFFFF;"
+     id="rect6642" />
+  <defs
+     id="defs6647">
+    <clipPath
+       id="cpMC4wMHw1OTUuMjh8MC4wMHw4NDEuODk=">
+      <rect
+         x="0.00"
+         y="0.00"
+         width="595.28"
+         height="841.89"
+         id="rect6644" />
+    </clipPath>
+  </defs>
+  <g
+     clip-path="url(#cpMC4wMHw1OTUuMjh8MC4wMHw4NDEuODk=)"
+     id="g7439">
+    <text
+       x="297.64"
+       y="17.43"
+       text-anchor="middle"
+       style="font-size: 14.40px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="148.00px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6649">Self-reported average</text>
+    <polyline
+       points="16.74,40.61 223.55,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6651" />
+    <polyline
+       points="223.55,40.61 248.75,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6653" />
+    <polyline
+       points="248.75,40.61 278.77,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6655" />
+    <polyline
+       points="278.77,40.61 303.97,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6657" />
+    <polyline
+       points="303.97,40.61 334.00,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6659" />
+    <polyline
+       points="334.00,40.61 359.20,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6661" />
+    <polyline
+       points="359.20,40.61 408.44,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6663" />
+    <polyline
+       points="408.44,40.61 433.64,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6665" />
+    <polyline
+       points="433.64,40.61 578.54,40.61 "
+       style="stroke-width: 0.75;"
+       id="polyline6667" />
+    <text
+       x="16.74"
+       y="38.70"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="50.60px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6669">Variable</text>
+    <text
+       x="16.74"
+       y="51.53"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="83.37px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6671">Rutter score (5)</text>
+    <text
+       x="16.74"
+       y="64.79"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="90.04px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6673">Rutter score (10)</text>
+    <text
+       x="16.74"
+       y="78.05"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="159.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6675">Child Development Scale (10)</text>
+    <text
+       x="16.74"
+       y="91.30"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="98.72px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6677">Malaise score (16)</text>
+    <text
+       x="16.74"
+       y="104.56"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="207.46px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6679">Behavioural &amp; emotional problems (16)</text>
+    <text
+       x="16.74"
+       y="117.82"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="151.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6681">Internalising behaviours (16)</text>
+    <text
+       x="16.74"
+       y="131.07"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="155.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6683">Externalising behaviours (16)</text>
+    <text
+       x="263.76"
+       y="38.70"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="19.05px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6685">RR</text>
+    <text
+       x="263.76"
+       y="51.53"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6687">1.090</text>
+    <text
+       x="263.76"
+       y="64.79"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6689">1.038</text>
+    <text
+       x="263.76"
+       y="78.05"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6691">1.409</text>
+    <text
+       x="263.76"
+       y="91.30"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6693">1.189</text>
+    <text
+       x="263.76"
+       y="104.56"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6695">1.149</text>
+    <text
+       x="263.76"
+       y="117.82"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6697">0.958</text>
+    <text
+       x="263.76"
+       y="131.07"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6699">1.153</text>
+    <text
+       x="318.98"
+       y="38.70"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="8.06px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6701">p</text>
+    <text
+       x="318.98"
+       y="51.53"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6703">0.220</text>
+    <text
+       x="318.98"
+       y="64.79"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6705">0.582</text>
+    <text
+       x="318.98"
+       y="78.05"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6707">0.000</text>
+    <text
+       x="318.98"
+       y="91.30"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6709">0.164</text>
+    <text
+       x="318.98"
+       y="104.56"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6711">0.000</text>
+    <text
+       x="318.98"
+       y="117.82"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6713">0.527</text>
+    <text
+       x="318.98"
+       y="131.07"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6715">0.145</text>
+    <text
+       x="383.82"
+       y="38.70"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="46.92px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6717">E-value</text>
+    <text
+       x="383.82"
+       y="51.53"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6719">1.000</text>
+    <text
+       x="383.82"
+       y="64.79"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6721">1.000</text>
+    <text
+       x="383.82"
+       y="78.05"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6723">1.749</text>
+    <text
+       x="383.82"
+       y="91.30"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6725">1.000</text>
+    <text
+       x="383.82"
+       y="104.56"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6727">1.367</text>
+    <text
+       x="383.82"
+       y="117.82"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6729">1.000</text>
+    <text
+       x="383.82"
+       y="131.07"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6731">1.000</text>
+    <polyline
+       points="480.86,133.40 480.86,40.61 "
+       style="stroke-width: 0.75; stroke: #D3D3D3;"
+       id="polyline6733" />
+    <polyline
+       points="433.64,133.40 575.31,133.40 "
+       style="stroke-width: 0.75;"
+       id="polyline6735" />
+    <line
+       x1="433.64"
+       y1="133.40"
+       x2="433.64"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6737" />
+    <line
+       x1="449.38"
+       y1="133.40"
+       x2="449.38"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6739" />
+    <line
+       x1="465.12"
+       y1="133.40"
+       x2="465.12"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6741" />
+    <line
+       x1="480.86"
+       y1="133.40"
+       x2="480.86"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6743" />
+    <line
+       x1="496.61"
+       y1="133.40"
+       x2="496.61"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6745" />
+    <line
+       x1="512.35"
+       y1="133.40"
+       x2="512.35"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6747" />
+    <line
+       x1="528.09"
+       y1="133.40"
+       x2="528.09"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6749" />
+    <line
+       x1="543.83"
+       y1="133.40"
+       x2="543.83"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6751" />
+    <line
+       x1="559.57"
+       y1="133.40"
+       x2="559.57"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6753" />
+    <line
+       x1="575.31"
+       y1="133.40"
+       x2="575.31"
+       y2="137.00"
+       style="stroke-width: 0.75;"
+       id="line6755" />
+    <text
+       x="433.64"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6757">0.7</text>
+    <text
+       x="449.38"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6759">0.8</text>
+    <text
+       x="465.12"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6761">0.9</text>
+    <text
+       x="480.86"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="3.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6763">1</text>
+    <text
+       x="496.61"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6765">1.1</text>
+    <text
+       x="512.35"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6767">1.2</text>
+    <text
+       x="528.09"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6769">1.3</text>
+    <text
+       x="543.83"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6771">1.4</text>
+    <text
+       x="559.57"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6773">1.5</text>
+    <text
+       x="575.31"
+       y="146.35"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6775">1.6</text>
+    <text
+       x="506.09"
+       y="154.39"
+       text-anchor="middle"
+       style="font-size: 7.20px; font-family: &quot;Arial&quot;;"
+       textLength="77.86px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6777">Risk ratio (standardised)</text>
+    <polyline
+       points="472.95,47.24 520.34,47.24 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6779" />
+    <rect
+       x="493.69"
+       y="45.91"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6781" />
+    <polyline
+       points="466.50,60.49 510.12,60.49 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6783" />
+    <rect
+       x="485.53"
+       y="59.17"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6785" />
+    <polyline
+       points="516.22,73.75 578.54,73.75 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6787" />
+    <rect
+       x="543.87"
+       y="72.42"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6789" />
+    <polyline
+       points="470.14,87.01 562.16,87.01 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6791" />
+    <rect
+       x="509.25"
+       y="85.68"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6793" />
+    <polyline
+       points="493.07,100.26 516.30,100.26 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6795" />
+    <rect
+       x="502.98"
+       y="98.94"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6797" />
+    <polyline
+       points="455.34,113.52 495.79,113.52 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6799" />
+    <rect
+       x="472.89"
+       y="112.19"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6801" />
+    <polyline
+       points="473.32,126.77 543.40,126.77 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6803" />
+    <rect
+       x="503.68"
+       y="125.45"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6805" />
+    <text
+       x="297.64"
+       y="185.80"
+       text-anchor="middle"
+       style="font-size: 14.40px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="150.42px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6807">Diary-derived average</text>
+    <polyline
+       points="16.74,208.99 223.55,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6809" />
+    <polyline
+       points="223.55,208.99 248.75,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6811" />
+    <polyline
+       points="248.75,208.99 278.77,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6813" />
+    <polyline
+       points="278.77,208.99 303.97,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6815" />
+    <polyline
+       points="303.97,208.99 334.00,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6817" />
+    <polyline
+       points="334.00,208.99 359.20,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6819" />
+    <polyline
+       points="359.20,208.99 408.44,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6821" />
+    <polyline
+       points="408.44,208.99 433.64,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6823" />
+    <polyline
+       points="433.64,208.99 578.54,208.99 "
+       style="stroke-width: 0.75;"
+       id="polyline6825" />
+    <text
+       x="16.74"
+       y="207.08"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="50.60px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6827">Variable</text>
+    <text
+       x="16.74"
+       y="219.91"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="83.37px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6829">Rutter score (5)</text>
+    <text
+       x="16.74"
+       y="233.17"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="90.04px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6831">Rutter score (10)</text>
+    <text
+       x="16.74"
+       y="246.43"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="159.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6833">Child Development Scale (10)</text>
+    <text
+       x="16.74"
+       y="259.68"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="98.72px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6835">Malaise score (16)</text>
+    <text
+       x="16.74"
+       y="272.94"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="207.46px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6837">Behavioural &amp; emotional problems (16)</text>
+    <text
+       x="16.74"
+       y="286.19"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="151.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6839">Internalising behaviours (16)</text>
+    <text
+       x="16.74"
+       y="299.45"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="155.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6841">Externalising behaviours (16)</text>
+    <text
+       x="263.76"
+       y="207.08"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="19.05px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6843">RR</text>
+    <text
+       x="263.76"
+       y="219.91"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6845">1.150</text>
+    <text
+       x="263.76"
+       y="233.17"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6847">1.217</text>
+    <text
+       x="263.76"
+       y="246.43"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6849">1.378</text>
+    <text
+       x="263.76"
+       y="259.68"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6851">0.958</text>
+    <text
+       x="263.76"
+       y="272.94"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6853">1.213</text>
+    <text
+       x="263.76"
+       y="286.19"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6855">1.055</text>
+    <text
+       x="263.76"
+       y="299.45"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6857">1.124</text>
+    <text
+       x="318.98"
+       y="207.08"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="8.06px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6859">p</text>
+    <text
+       x="318.98"
+       y="219.91"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6861">0.105</text>
+    <text
+       x="318.98"
+       y="233.17"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6863">0.006</text>
+    <text
+       x="318.98"
+       y="246.43"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6865">0.000</text>
+    <text
+       x="318.98"
+       y="259.68"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6867">0.681</text>
+    <text
+       x="318.98"
+       y="272.94"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6869">0.004</text>
+    <text
+       x="318.98"
+       y="286.19"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6871">0.445</text>
+    <text
+       x="318.98"
+       y="299.45"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6873">0.276</text>
+    <text
+       x="383.82"
+       y="207.08"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="46.92px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6875">E-value</text>
+    <text
+       x="383.82"
+       y="219.91"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6877">1.000</text>
+    <text
+       x="383.82"
+       y="233.17"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6879">1.308</text>
+    <text
+       x="383.82"
+       y="246.43"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6881">1.678</text>
+    <text
+       x="383.82"
+       y="259.68"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6883">1.000</text>
+    <text
+       x="383.82"
+       y="272.94"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6885">1.320</text>
+    <text
+       x="383.82"
+       y="286.19"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6887">1.000</text>
+    <text
+       x="383.82"
+       y="299.45"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6889">1.000</text>
+    <polyline
+       points="481.94,301.78 481.94,208.99 "
+       style="stroke-width: 0.75; stroke: #D3D3D3;"
+       id="polyline6891" />
+    <polyline
+       points="433.64,301.78 578.54,301.78 "
+       style="stroke-width: 0.75;"
+       id="polyline6893" />
+    <line
+       x1="433.64"
+       y1="301.78"
+       x2="433.64"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6895" />
+    <line
+       x1="449.74"
+       y1="301.78"
+       x2="449.74"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6897" />
+    <line
+       x1="465.84"
+       y1="301.78"
+       x2="465.84"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6899" />
+    <line
+       x1="481.94"
+       y1="301.78"
+       x2="481.94"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6901" />
+    <line
+       x1="498.04"
+       y1="301.78"
+       x2="498.04"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6903" />
+    <line
+       x1="514.14"
+       y1="301.78"
+       x2="514.14"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6905" />
+    <line
+       x1="530.24"
+       y1="301.78"
+       x2="530.24"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6907" />
+    <line
+       x1="546.34"
+       y1="301.78"
+       x2="546.34"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6909" />
+    <line
+       x1="562.44"
+       y1="301.78"
+       x2="562.44"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6911" />
+    <line
+       x1="578.54"
+       y1="301.78"
+       x2="578.54"
+       y2="305.38"
+       style="stroke-width: 0.75;"
+       id="line6913" />
+    <text
+       x="433.64"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6915">0.7</text>
+    <text
+       x="449.74"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6917">0.8</text>
+    <text
+       x="465.84"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6919">0.9</text>
+    <text
+       x="481.94"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="3.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6921">1</text>
+    <text
+       x="498.04"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6923">1.1</text>
+    <text
+       x="514.14"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6925">1.2</text>
+    <text
+       x="530.24"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6927">1.3</text>
+    <text
+       x="546.34"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6929">1.4</text>
+    <text
+       x="562.44"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6931">1.5</text>
+    <text
+       x="578.54"
+       y="314.73"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6933">1.6</text>
+    <text
+       x="506.09"
+       y="322.77"
+       text-anchor="middle"
+       style="font-size: 7.20px; font-family: &quot;Arial&quot;;"
+       textLength="77.86px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6935">Risk ratio (standardised)</text>
+    <polyline
+       points="477.34,215.61 539.99,215.61 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6937" />
+    <rect
+       x="504.71"
+       y="214.29"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6939" />
+    <polyline
+       points="491.41,228.87 546.04,228.87 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6941" />
+    <rect
+       x="515.50"
+       y="227.55"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6943" />
+    <polyline
+       points="513.35,242.13 576.64,242.13 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6945" />
+    <rect
+       x="541.42"
+       y="240.80"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6947" />
+    <polyline
+       points="446.87,255.38 509.97,255.38 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6949" />
+    <rect
+       x="473.90"
+       y="254.06"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6951" />
+    <polyline
+       points="492.00,268.64 544.03,268.64 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6953" />
+    <rect
+       x="514.97"
+       y="267.31"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6955" />
+    <polyline
+       points="468.95,281.90 515.95,281.90 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6957" />
+    <rect
+       x="489.51"
+       y="280.57"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6959" />
+    <polyline
+       points="467.62,295.15 544.10,295.15 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline6961" />
+    <rect
+       x="500.54"
+       y="293.83"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect6963" />
+    <text
+       x="297.64"
+       y="354.18"
+       text-anchor="middle"
+       style="font-size: 14.40px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="129.83px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6965">activPAL algorithm</text>
+    <polyline
+       points="16.74,377.36 223.55,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6967" />
+    <polyline
+       points="223.55,377.36 248.75,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6969" />
+    <polyline
+       points="248.75,377.36 278.77,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6971" />
+    <polyline
+       points="278.77,377.36 303.97,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6973" />
+    <polyline
+       points="303.97,377.36 334.00,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6975" />
+    <polyline
+       points="334.00,377.36 359.20,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6977" />
+    <polyline
+       points="359.20,377.36 408.44,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6979" />
+    <polyline
+       points="408.44,377.36 433.64,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6981" />
+    <polyline
+       points="433.64,377.36 578.54,377.36 "
+       style="stroke-width: 0.75;"
+       id="polyline6983" />
+    <text
+       x="16.74"
+       y="375.46"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="50.60px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6985">Variable</text>
+    <text
+       x="16.74"
+       y="388.29"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="83.37px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6987">Rutter score (5)</text>
+    <text
+       x="16.74"
+       y="401.55"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="90.04px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6989">Rutter score (10)</text>
+    <text
+       x="16.74"
+       y="414.80"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="159.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6991">Child Development Scale (10)</text>
+    <text
+       x="16.74"
+       y="428.06"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="98.72px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6993">Malaise score (16)</text>
+    <text
+       x="16.74"
+       y="441.32"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="207.46px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6995">Behavioural &amp; emotional problems (16)</text>
+    <text
+       x="16.74"
+       y="454.57"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="151.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6997">Internalising behaviours (16)</text>
+    <text
+       x="16.74"
+       y="467.83"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="155.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text6999">Externalising behaviours (16)</text>
+    <text
+       x="263.76"
+       y="375.46"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="19.05px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7001">RR</text>
+    <text
+       x="263.76"
+       y="388.29"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7003">0.933</text>
+    <text
+       x="263.76"
+       y="401.55"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7005">1.007</text>
+    <text
+       x="263.76"
+       y="414.80"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7007">0.933</text>
+    <text
+       x="263.76"
+       y="428.06"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7009">0.998</text>
+    <text
+       x="263.76"
+       y="441.32"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7011">1.075</text>
+    <text
+       x="263.76"
+       y="454.57"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7013">1.038</text>
+    <text
+       x="263.76"
+       y="467.83"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7015">1.026</text>
+    <text
+       x="318.98"
+       y="375.46"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="8.06px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7017">p</text>
+    <text
+       x="318.98"
+       y="388.29"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7019">0.155</text>
+    <text
+       x="318.98"
+       y="401.55"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7021">0.882</text>
+    <text
+       x="318.98"
+       y="414.80"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7023">0.090</text>
+    <text
+       x="318.98"
+       y="428.06"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7025">0.974</text>
+    <text
+       x="318.98"
+       y="441.32"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7027">0.135</text>
+    <text
+       x="318.98"
+       y="454.57"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7029">0.485</text>
+    <text
+       x="318.98"
+       y="467.83"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7031">0.548</text>
+    <text
+       x="383.82"
+       y="375.46"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="46.92px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7033">E-value</text>
+    <text
+       x="383.82"
+       y="388.29"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7035">1.000</text>
+    <text
+       x="383.82"
+       y="401.55"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7037">1.000</text>
+    <text
+       x="383.82"
+       y="414.80"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7039">1.000</text>
+    <text
+       x="383.82"
+       y="428.06"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7041">1.000</text>
+    <text
+       x="383.82"
+       y="441.32"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7043">1.000</text>
+    <text
+       x="383.82"
+       y="454.57"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7045">1.000</text>
+    <text
+       x="383.82"
+       y="467.83"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7047">1.000</text>
+    <polyline
+       points="481.94,470.16 481.94,377.36 "
+       style="stroke-width: 0.75; stroke: #D3D3D3;"
+       id="polyline7049" />
+    <polyline
+       points="433.64,470.16 578.54,470.16 "
+       style="stroke-width: 0.75;"
+       id="polyline7051" />
+    <line
+       x1="433.64"
+       y1="470.16"
+       x2="433.64"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7053" />
+    <line
+       x1="449.74"
+       y1="470.16"
+       x2="449.74"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7055" />
+    <line
+       x1="465.84"
+       y1="470.16"
+       x2="465.84"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7057" />
+    <line
+       x1="481.94"
+       y1="470.16"
+       x2="481.94"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7059" />
+    <line
+       x1="498.04"
+       y1="470.16"
+       x2="498.04"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7061" />
+    <line
+       x1="514.14"
+       y1="470.16"
+       x2="514.14"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7063" />
+    <line
+       x1="530.24"
+       y1="470.16"
+       x2="530.24"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7065" />
+    <line
+       x1="546.34"
+       y1="470.16"
+       x2="546.34"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7067" />
+    <line
+       x1="562.44"
+       y1="470.16"
+       x2="562.44"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7069" />
+    <line
+       x1="578.54"
+       y1="470.16"
+       x2="578.54"
+       y2="473.76"
+       style="stroke-width: 0.75;"
+       id="line7071" />
+    <text
+       x="433.64"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7073">0.7</text>
+    <text
+       x="449.74"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7075">0.8</text>
+    <text
+       x="465.84"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7077">0.9</text>
+    <text
+       x="481.94"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="3.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7079">1</text>
+    <text
+       x="498.04"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7081">1.1</text>
+    <text
+       x="514.14"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7083">1.2</text>
+    <text
+       x="530.24"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7085">1.3</text>
+    <text
+       x="546.34"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7087">1.4</text>
+    <text
+       x="562.44"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7089">1.5</text>
+    <text
+       x="578.54"
+       y="483.11"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7091">1.6</text>
+    <text
+       x="506.09"
+       y="491.15"
+       text-anchor="middle"
+       style="font-size: 7.20px; font-family: &quot;Arial&quot;;"
+       textLength="77.86px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7093">Risk ratio (standardised)</text>
+    <polyline
+       points="457.40,383.99 486.22,383.99 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7095" />
+    <rect
+       x="469.80"
+       y="382.67"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7097" />
+    <polyline
+       points="469.34,397.25 497.96,397.25 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7099" />
+    <rect
+       x="481.69"
+       y="395.92"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7101" />
+    <polyline
+       points="459.50,410.51 483.69,410.51 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7103" />
+    <rect
+       x="469.78"
+       y="409.18"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7105" />
+    <polyline
+       points="466.94,423.76 497.92,423.76 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7107" />
+    <rect
+       x="480.36"
+       y="422.44"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7109" />
+    <polyline
+       points="478.37,437.02 511.32,437.02 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7111" />
+    <rect
+       x="492.74"
+       y="435.69"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7113" />
+    <polyline
+       points="471.43,450.27 506.55,450.27 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7115" />
+    <rect
+       x="486.75"
+       y="448.95"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7117" />
+    <polyline
+       points="472.79,463.53 500.71,463.53 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7119" />
+    <rect
+       x="484.84"
+       y="462.21"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7121" />
+    <text
+       x="297.64"
+       y="522.56"
+       text-anchor="middle"
+       style="font-size: 14.40px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="194.34px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7123">van der Berg et al. algorithm</text>
+    <polyline
+       points="16.74,545.74 223.55,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7125" />
+    <polyline
+       points="223.55,545.74 248.75,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7127" />
+    <polyline
+       points="248.75,545.74 278.77,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7129" />
+    <polyline
+       points="278.77,545.74 303.97,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7131" />
+    <polyline
+       points="303.97,545.74 334.00,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7133" />
+    <polyline
+       points="334.00,545.74 359.20,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7135" />
+    <polyline
+       points="359.20,545.74 408.44,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7137" />
+    <polyline
+       points="408.44,545.74 433.64,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7139" />
+    <polyline
+       points="433.64,545.74 578.54,545.74 "
+       style="stroke-width: 0.75;"
+       id="polyline7141" />
+    <text
+       x="16.74"
+       y="543.84"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="50.60px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7143">Variable</text>
+    <text
+       x="16.74"
+       y="556.67"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="83.37px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7145">Rutter score (5)</text>
+    <text
+       x="16.74"
+       y="569.93"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="90.04px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7147">Rutter score (10)</text>
+    <text
+       x="16.74"
+       y="583.18"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="159.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7149">Child Development Scale (10)</text>
+    <text
+       x="16.74"
+       y="596.44"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="98.72px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7151">Malaise score (16)</text>
+    <text
+       x="16.74"
+       y="609.69"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="207.46px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7153">Behavioural &amp; emotional problems (16)</text>
+    <text
+       x="16.74"
+       y="622.95"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="151.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7155">Internalising behaviours (16)</text>
+    <text
+       x="16.74"
+       y="636.21"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="155.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7157">Externalising behaviours (16)</text>
+    <text
+       x="263.76"
+       y="543.84"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="19.05px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7159">RR</text>
+    <text
+       x="263.76"
+       y="556.67"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7161">1.056</text>
+    <text
+       x="263.76"
+       y="569.93"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7163">1.102</text>
+    <text
+       x="263.76"
+       y="583.18"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7165">1.021</text>
+    <text
+       x="263.76"
+       y="596.44"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7167">0.950</text>
+    <text
+       x="263.76"
+       y="609.69"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7169">0.870</text>
+    <text
+       x="263.76"
+       y="622.95"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7171">1.010</text>
+    <text
+       x="263.76"
+       y="636.21"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7173">1.084</text>
+    <text
+       x="318.98"
+       y="543.84"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="8.06px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7175">p</text>
+    <text
+       x="318.98"
+       y="556.67"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7177">0.280</text>
+    <text
+       x="318.98"
+       y="569.93"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7179">0.073</text>
+    <text
+       x="318.98"
+       y="583.18"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7181">0.823</text>
+    <text
+       x="318.98"
+       y="596.44"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7183">0.579</text>
+    <text
+       x="318.98"
+       y="609.69"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7185">0.015</text>
+    <text
+       x="318.98"
+       y="622.95"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7187">0.894</text>
+    <text
+       x="318.98"
+       y="636.21"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7189">0.289</text>
+    <text
+       x="383.82"
+       y="543.84"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="46.92px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7191">E-value</text>
+    <text
+       x="383.82"
+       y="556.67"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7193">1.000</text>
+    <text
+       x="383.82"
+       y="569.93"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7195">1.000</text>
+    <text
+       x="383.82"
+       y="583.18"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7197">1.000</text>
+    <text
+       x="383.82"
+       y="596.44"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7199">1.000</text>
+    <text
+       x="383.82"
+       y="609.69"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7201">1.195</text>
+    <text
+       x="383.82"
+       y="622.95"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7203">1.000</text>
+    <text
+       x="383.82"
+       y="636.21"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7205">1.000</text>
+    <polyline
+       points="481.94,638.54 481.94,545.74 "
+       style="stroke-width: 0.75; stroke: #D3D3D3;"
+       id="polyline7207" />
+    <polyline
+       points="433.64,638.54 578.54,638.54 "
+       style="stroke-width: 0.75;"
+       id="polyline7209" />
+    <line
+       x1="433.64"
+       y1="638.54"
+       x2="433.64"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7211" />
+    <line
+       x1="449.74"
+       y1="638.54"
+       x2="449.74"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7213" />
+    <line
+       x1="465.84"
+       y1="638.54"
+       x2="465.84"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7215" />
+    <line
+       x1="481.94"
+       y1="638.54"
+       x2="481.94"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7217" />
+    <line
+       x1="498.04"
+       y1="638.54"
+       x2="498.04"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7219" />
+    <line
+       x1="514.14"
+       y1="638.54"
+       x2="514.14"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7221" />
+    <line
+       x1="530.24"
+       y1="638.54"
+       x2="530.24"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7223" />
+    <line
+       x1="546.34"
+       y1="638.54"
+       x2="546.34"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7225" />
+    <line
+       x1="562.44"
+       y1="638.54"
+       x2="562.44"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7227" />
+    <line
+       x1="578.54"
+       y1="638.54"
+       x2="578.54"
+       y2="642.14"
+       style="stroke-width: 0.75;"
+       id="line7229" />
+    <text
+       x="433.64"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7231">0.7</text>
+    <text
+       x="449.74"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7233">0.8</text>
+    <text
+       x="465.84"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7235">0.9</text>
+    <text
+       x="481.94"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="3.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7237">1</text>
+    <text
+       x="498.04"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7239">1.1</text>
+    <text
+       x="514.14"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7241">1.2</text>
+    <text
+       x="530.24"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7243">1.3</text>
+    <text
+       x="546.34"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7245">1.4</text>
+    <text
+       x="562.44"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7247">1.5</text>
+    <text
+       x="578.54"
+       y="651.49"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7249">1.6</text>
+    <text
+       x="506.09"
+       y="659.52"
+       text-anchor="middle"
+       style="font-size: 7.20px; font-family: &quot;Arial&quot;;"
+       textLength="77.86px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7251">Risk ratio (standardised)</text>
+    <polyline
+       points="474.98,552.37 508.54,552.37 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7253" />
+    <rect
+       x="489.61"
+       y="551.04"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7255" />
+    <polyline
+       points="480.49,565.63 518.25,565.63 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7257" />
+    <rect
+       x="497.04"
+       y="564.30"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7259" />
+    <polyline
+       points="457.67,578.88 518.66,578.88 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7261" />
+    <rect
+       x="484.04"
+       y="577.56"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7263" />
+    <polyline
+       points="448.59,592.14 504.21,592.14 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7265" />
+    <rect
+       x="472.57"
+       y="590.81"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7267" />
+    <polyline
+       points="446.17,605.40 477.65,605.40 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7269" />
+    <rect
+       x="459.70"
+       y="604.07"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7271" />
+    <polyline
+       points="462.04,618.65 508.23,618.65 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7273" />
+    <rect
+       x="482.18"
+       y="617.33"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7275" />
+    <polyline
+       points="471.25,631.91 523.74,631.91 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7277" />
+    <rect
+       x="494.20"
+       y="630.58"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7279" />
+    <text
+       x="297.64"
+       y="690.94"
+       text-anchor="middle"
+       style="font-size: 14.40px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="158.21px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7281">Winkler et al. algorithm</text>
+    <polyline
+       points="16.74,714.12 223.55,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7283" />
+    <polyline
+       points="223.55,714.12 248.75,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7285" />
+    <polyline
+       points="248.75,714.12 278.77,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7287" />
+    <polyline
+       points="278.77,714.12 303.97,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7289" />
+    <polyline
+       points="303.97,714.12 334.00,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7291" />
+    <polyline
+       points="334.00,714.12 359.20,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7293" />
+    <polyline
+       points="359.20,714.12 408.44,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7295" />
+    <polyline
+       points="408.44,714.12 433.64,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7297" />
+    <polyline
+       points="433.64,714.12 578.54,714.12 "
+       style="stroke-width: 0.75;"
+       id="polyline7299" />
+    <text
+       x="16.74"
+       y="712.22"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="50.60px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7301">Variable</text>
+    <text
+       x="16.74"
+       y="725.05"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="83.37px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7303">Rutter score (5)</text>
+    <text
+       x="16.74"
+       y="738.30"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="90.04px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7305">Rutter score (10)</text>
+    <text
+       x="16.74"
+       y="751.56"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="159.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7307">Child Development Scale (10)</text>
+    <text
+       x="16.74"
+       y="764.82"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="98.72px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7309">Malaise score (16)</text>
+    <text
+       x="16.74"
+       y="778.07"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="207.46px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7311">Behavioural &amp; emotional problems (16)</text>
+    <text
+       x="16.74"
+       y="791.33"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="151.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7313">Internalising behaviours (16)</text>
+    <text
+       x="16.74"
+       y="804.58"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="155.43px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7315">Externalising behaviours (16)</text>
+    <text
+       x="263.76"
+       y="712.22"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="19.05px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7317">RR</text>
+    <text
+       x="263.76"
+       y="725.05"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7319">1.226</text>
+    <text
+       x="263.76"
+       y="738.30"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7321">1.059</text>
+    <text
+       x="263.76"
+       y="751.56"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7323">1.282</text>
+    <text
+       x="263.76"
+       y="764.82"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7325">1.141</text>
+    <text
+       x="263.76"
+       y="778.07"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7327">1.037</text>
+    <text
+       x="263.76"
+       y="791.33"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7329">1.045</text>
+    <text
+       x="263.76"
+       y="804.58"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7331">1.223</text>
+    <text
+       x="318.98"
+       y="712.22"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="8.06px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7333">p</text>
+    <text
+       x="318.98"
+       y="725.05"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7335">0.000</text>
+    <text
+       x="318.98"
+       y="738.30"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7337">0.347</text>
+    <text
+       x="318.98"
+       y="751.56"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7339">0.001</text>
+    <text
+       x="318.98"
+       y="764.82"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7341">0.091</text>
+    <text
+       x="318.98"
+       y="778.07"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7343">0.547</text>
+    <text
+       x="318.98"
+       y="791.33"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7345">0.368</text>
+    <text
+       x="318.98"
+       y="804.58"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7347">0.000</text>
+    <text
+       x="383.82"
+       y="712.22"
+       text-anchor="middle"
+       style="font-size: 13.20px; font-weight: bold; font-family: &quot;Arial&quot;;"
+       textLength="46.92px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7349">E-value</text>
+    <text
+       x="383.82"
+       y="725.05"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7351">1.535</text>
+    <text
+       x="383.82"
+       y="738.30"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7353">1.000</text>
+    <text
+       x="383.82"
+       y="751.56"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7355">1.449</text>
+    <text
+       x="383.82"
+       y="764.82"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7357">1.000</text>
+    <text
+       x="383.82"
+       y="778.07"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7359">1.000</text>
+    <text
+       x="383.82"
+       y="791.33"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="30.03px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7361">1.000</text>
+    <text
+       x="383.82"
+       y="804.58"
+       text-anchor="middle"
+       style="font-size: 12.00px; font-family: &quot;Arial&quot;;"
+       textLength="29.14px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7363">1.411</text>
+    <polyline
+       points="481.94,806.91 481.94,714.12 "
+       style="stroke-width: 0.75; stroke: #D3D3D3;"
+       id="polyline7365" />
+    <polyline
+       points="433.64,806.91 578.54,806.91 "
+       style="stroke-width: 0.75;"
+       id="polyline7367" />
+    <line
+       x1="433.64"
+       y1="806.91"
+       x2="433.64"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7369" />
+    <line
+       x1="449.74"
+       y1="806.91"
+       x2="449.74"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7371" />
+    <line
+       x1="465.84"
+       y1="806.91"
+       x2="465.84"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7373" />
+    <line
+       x1="481.94"
+       y1="806.91"
+       x2="481.94"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7375" />
+    <line
+       x1="498.04"
+       y1="806.91"
+       x2="498.04"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7377" />
+    <line
+       x1="514.14"
+       y1="806.91"
+       x2="514.14"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7379" />
+    <line
+       x1="530.24"
+       y1="806.91"
+       x2="530.24"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7381" />
+    <line
+       x1="546.34"
+       y1="806.91"
+       x2="546.34"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7383" />
+    <line
+       x1="562.44"
+       y1="806.91"
+       x2="562.44"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7385" />
+    <line
+       x1="578.54"
+       y1="806.91"
+       x2="578.54"
+       y2="810.51"
+       style="stroke-width: 0.75;"
+       id="line7387" />
+    <text
+       x="433.64"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7389">0.7</text>
+    <text
+       x="449.74"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7391">0.8</text>
+    <text
+       x="465.84"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7393">0.9</text>
+    <text
+       x="481.94"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="3.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7395">1</text>
+    <text
+       x="498.04"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7397">1.1</text>
+    <text
+       x="514.14"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7399">1.2</text>
+    <text
+       x="530.24"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7401">1.3</text>
+    <text
+       x="546.34"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7403">1.4</text>
+    <text
+       x="562.44"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7405">1.5</text>
+    <text
+       x="578.54"
+       y="819.86"
+       text-anchor="middle"
+       style="font-size: 6.00px; font-family: &quot;Arial&quot;;"
+       textLength="8.33px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7407">1.6</text>
+    <text
+       x="506.09"
+       y="827.90"
+       text-anchor="middle"
+       style="font-size: 7.20px; font-family: &quot;Arial&quot;;"
+       textLength="77.86px"
+       lengthAdjust="spacingAndGlyphs"
+       id="text7409">Risk ratio (standardised)</text>
+    <polyline
+       points="504.17,720.75 533.54,720.75 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7411" />
+    <rect
+       x="516.98"
+       y="719.42"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7413" />
+    <polyline
+       points="472.33,734.00 512.77,734.00 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7415" />
+    <rect
+       x="490.03"
+       y="732.68"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7417" />
+    <polyline
+       points="499.06,747.26 560.08,747.26 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7419" />
+    <rect
+       x="526.00"
+       y="745.94"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7421" />
+    <polyline
+       points="478.63,760.52 534.78,760.52 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7423" />
+    <rect
+       x="503.24"
+       y="759.19"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7425" />
+    <polyline
+       points="469.24,773.77 508.95,773.77 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7427" />
+    <rect
+       x="486.59"
+       y="772.45"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7429" />
+    <polyline
+       points="473.81,787.03 506.11,787.03 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7431" />
+    <rect
+       x="487.86"
+       y="785.70"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7433" />
+    <polyline
+       points="496.85,800.29 541.49,800.29 "
+       style="stroke-width: 0.75; stroke: #BEBEBE;"
+       id="polyline7435" />
+    <rect
+       x="516.58"
+       y="798.96"
+       width="2.65"
+       height="2.65"
+       style="stroke-width: 0.75; fill: #000000;"
+       id="rect7437" />
+  </g>
+</svg>

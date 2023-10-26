@@ -1,0 +1,467 @@
+---
+title: "2d_winkler"
+author: "Thomas E. Metherell"
+date: "2023-02-08"
+output: html_document
+---
+
+Script in series: "Associations between early life mental health indicators and sleep in adulthood"
+
+This script is a naïve R implementation of Danielle Bodicoat's (07/10/2015) Stata do-file implementing Winkler et al.'s (2016) algorithm for deriving sleep time from raw ActivPAL event files.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dependencies
+We start by loading the necessary dependencies.
+
+```{r dependencies}
+library(parallel)
+library(magrittr)
+library(purrr)
+library(data.table)
+```
+
+## Splitting data
+Because this algorithm is computationally intensive, we will use parallel computation to speed up the process. To do this we need to divide up the participants into as many groups as there are cores available for use.
+
+```{r split}
+# Setting random seed
+set.seed(3154)
+
+# Creating a list of event files
+filelist <- list.files(path = ".\\Events_EventMarker", pattern = "Events.csv")
+
+# Generating a random integer between 1 and the number of cores available for each participant, then creating a data frame of them
+node <- sample(1:detectCores(), length(filelist), replace = TRUE)
+assignments <- data.frame(1:length(node), node)
+
+# Splitting the file list according to the random number assigned
+for(i in 1:detectCores()){
+  assign(
+    paste0("filelist", i),
+    filelist[assignments$node == i]
+  )
+}
+
+# Removing unnecessary objects
+rm(list = c("filelist", "node", "assignments", "i"))
+```
+
+## The algorithm
+We can now implement the Winkler et al. (2016) algorithm as detailed below. The program iterates through participants and successively appends the results to a .csv file; make sure no .csv file of the same name already exists before running!
+
+```{r processing}
+# Establishing parallel computation cluster
+## NB: THIS SECTION IS CURRENTLY SET TO CREATE AS MANY NODES AS THERE ARE CPU CORES AVAILABLE. THIS MAY CAUSE PROBLEMS IF THERE ARE OTHER TASKS RUNNING SIMULTANEOUSLY
+### if you need to reduce the number, substitute `detectCores()` with e.g. `detectCores() - 2` or `6` in BOTH of the appearances below AND the one above in the data splitting section
+cl <- makeCluster(detectCores())
+
+# Loading dependencies within the cluster environment
+clusterEvalQ(cl, {
+  library(data.table)
+  library(tidyverse)
+  library(magrittr)
+  library(lubridate)
+  library(chron)
+})
+
+# Making the filelists available in the cluster environment
+clusterExport(cl, ls(pattern = "filelist"))
+
+# Applying the algorithm in the cluster
+df <- parLapply(cl = cl, X = 1:detectCores(), fun = function(no){
+  
+  # Initialising data frames
+  df_full <- data.frame(ParticipantId = as.integer(), md_winkler_sleepdur = as.double())
+  
+  # Looping through participants
+  for(i in get(paste0("filelist", no))){
+    
+    # Reading the participant's *Events.csv file
+    df <- read.csv(paste0(".\\Events_EventMarker\\", i))
+    
+    df %<>%
+      # Giving variables more sensible names
+      rename(
+        Intervals = "Interval..s.",
+        ActivityType = "ActivityCode..0.sedentary..1..standing..2.stepping."
+      ) %>%
+      
+      # Retaining only needed variables
+      select(Time, Intervals, ActivityType, CumulativeStepCount) %>%
+      
+      # Removing duplicate rows
+      distinct() %>%
+      
+      mutate(
+        # Creating variable encoding number of steps in current bout
+        steps = if_else(
+          row_number() == 1,
+          CumulativeStepCount,
+          CumulativeStepCount - lag(CumulativeStepCount)
+        ),
+        
+        # Marking bouts where the activity type is different from that of the previous bout
+        changeofactivity = if_else(
+          row_number() == 1 | ActivityType != lag(ActivityType),
+          TRUE,
+          FALSE
+        ),
+        
+        # Creating an 'event ID', i.e. running count of spells of a single activity type, derived from the cumulative sum of changes of activity type
+        event = cumsum(changeofactivity)
+      ) %>%
+      
+      # Removing unnecessary variables
+      select(-CumulativeStepCount, -changeofactivity) %>%
+      
+      # Grouping by event ID
+      group_by(event) %>%
+      
+      mutate(
+        # Replacing bout duration with the duration of the entire event
+        Intervals = sum(Intervals),
+        
+        # Replacing step count with the sum of steps in the entire event
+        steps = sum(steps),
+        
+        # Replacing bout start time with the start time of the entire event
+        Time = Time[row_number() == 1]
+      ) %>%
+      
+      # Removing duplicate rows so there is only one row per event
+      distinct() %>%
+      
+      # Ungrouping
+      ungroup() %>%
+      
+      mutate(
+        # Formatting date/time into standard POSIXct format
+        Time = strptime("1899-12-31 00:00:00", format = "%Y-%m-%d %H:%M:%S") + Time * 86400,
+        
+        # Separately encoding the date and time
+        date = as_date(strftime(Time, format = "%Y-%m-%d")),
+        timeofday = times(strftime(Time, format = "%H:%M:%S")),
+        
+        # Creating a 'reference day' variable (noon to noon), where times in the morning are associated with the previous day
+        refday = case_when(
+          timeofday >= times("12:00:00") ~ date,
+          timeofday < times("12:00:00") ~ date - 1
+        )) %>%
+      
+      # Removing unnecessary variables
+      select(-date, -timeofday) %>%
+      
+      # Grouping by reference day
+      group_by(refday) %>%
+      
+      # Sorting by time within groups
+      arrange(Time, .by_group = TRUE) %>%
+      
+      mutate(
+        # Creating a new binary variable indicating whether an event is counted as sleep, and initially classing any sedentary/standing event over 5 hours, or the longest sedentary/standing event (if it exceeds 2 hours), as sleep
+        sleep = case_when(
+          ActivityType %in% c(0,1) & Intervals >= 18000 ~ TRUE,
+          Intervals == max(Intervals[ActivityType %in% c(0, 1)]) & Intervals >= 7200 ~ TRUE
+        ),
+        sleep = if_else(
+          is.na(sleep),
+          FALSE,
+          sleep
+        )
+      )
+    
+    # Creating dummy variables for iteration
+    old <- -1
+    new <- 0
+    
+    # Iterating until the number of rows classed as 'sleep' stops increasing
+    while(old < new){
+      
+      # Setting initial 'sleep' row count
+      old <- new
+      
+      df %<>%
+        mutate(
+          # Creating a variable 'sleep_end' that encodes the end of the 'sleep window' for events currently marked as sleep
+          sleep_end = if_else(
+            sleep,
+            Time + Intervals + 900,
+            NA_POSIXct_
+          ),
+          
+          # If the current event is within the previous event's sleep window, extending sleep_end to the current event
+          sleep_end = if_else(
+            is.na(sleep_end) & Time < lag(sleep_end) & !is.na(lag(sleep_end)),
+            lag(sleep_end),
+            NA_POSIXct_
+          ),
+          
+          # If an event is the last within a sleep window, and is sedentary with a duration of >= 2h, marking it as sleep
+          sleep = if_else(
+            !is.na(sleep_end) & is.na(lead(sleep_end)) & ActivityType %in% c(0, 1) & Intervals >= 7200,
+            TRUE,
+            sleep
+          )
+        ) %>%
+        
+        # Regrouping by reference day and sleep_end value (i.e. sleep window)
+        ungroup() %>% group_by(refday, sleep_end) %>%
+        
+        # Summing number of steps within sleep windows
+        mutate(total_end = if_else(
+          !is.na(sleep_end),
+          sum(steps),
+          NA_integer_
+        )) %>%
+        
+        # Regrouping by reference day only
+        ungroup() %>% group_by(refday) %>%
+        
+        mutate(
+          # If an event is the last within a sleep window, and there have been less than 20 steps within that window, and either this or the following event is sedentary with a duration of >= 30 minutes, marking it as sleep
+          sleep = if_else(
+            !is.na(sleep_end) & is.na(lead(sleep_end)) & total_end <= 20 & ((ActivityType %in% c(0, 1) & Intervals >= 1800) | (lead(ActivityType) %in% c(0, 1) & lead(Intervals) >= 1800)),
+            TRUE,
+            sleep
+          ),
+          
+          # If the event following this event is marked as sleep, and the event is within a sleep window, marking it as sleep
+          sleep = if_else(
+            lead(sleep) & !is.na(sleep_end),
+            TRUE,
+            sleep
+          )
+        ) %>%
+        
+        # Sorting in reverse time order by group
+        ## NB: this means that lag() = the next event, lead() = the previous event
+        arrange(desc(Time), .by_group = TRUE) %>%
+        
+        mutate(
+          # Creating a variable 'sleep_start' that encodes the end of the 'sleep window' for events currently marked as the beginning of a series of sleep events
+          sleep_start = if_else(
+            is.na(lead(sleep)) & sleep,
+            Time - 900,
+            NA_POSIXct_
+          ),
+          
+          # If the current event is within the next event's sleep window, extending sleep_start to the current event
+          sleep_start = if_else(
+            is.na(sleep_start) & (Time + Intervals) > lag(sleep_start) & !is.na(lag(sleep_start)),
+            lag(sleep_start),
+            sleep_start
+          ),
+          
+          # If an event is the first within a sleep window, and is sedentary with a duration of >= 2h, marking it as sleep
+          sleep = if_else(
+            !is.na(sleep_start) & is.na(lead(sleep_start)) & ActivityType %in% c(0, 1) & Intervals >= 7200,
+            TRUE,
+            sleep
+          )
+        ) %>%
+        
+        # Sorting in normal time order by group
+        ## NB: lag() and lead() return to functioning as would be expected
+        arrange(Time, .by_group = TRUE) %>%
+        
+        # Regrouping by reference day and sleep_start value
+        ungroup() %>% group_by(refday, sleep_start) %>%
+        
+        # Summing number of steps within sleep windows
+        mutate(total_start = if_else(
+          !is.na(sleep_start),
+          sum(steps),
+          NA_integer_
+        )) %>%
+        
+        # Regrouping by reference day only
+        ungroup() %>% group_by(refday) %>%
+        
+        mutate(
+          # If an event is the first within a sleep window, and there will be less than 20 steps within that window, and either this or the preceding event is sedentary with a duration of >= 30 minutes, marking it as sleep
+          sleep = if_else(
+            !is.na(sleep_start) & is.na(lag(sleep_start)) & total_start <= 20 & ((ActivityType %in% c(0, 1) & Intervals >= 1800) | (lag(ActivityType) %in% c(0, 1) & lag(Intervals) >= 1800)),
+            TRUE,
+            sleep
+          ),
+          
+          # If the event preceding this event is marked as sleep, and the event is within a sleep window, marking it as sleep
+          sleep = if_else(
+            lag(sleep) & !is.na(sleep_start),
+            TRUE,
+            sleep
+          ),
+          
+          # Marking as sleep any event that:
+          ## * Follows an event marked as sleep, is a standing event and is between two sedentary events;
+          ## * Follows an event marked as sleep, is a sedentary event and follows a sedentary event followed by a standing event;
+          ## * Precedes an event marked as sleep, is a standing event and is between two sedentary events or
+          ## * Precedes an event marked as sleep, is a standing event and precedes a standing event followed by a sedentary event.
+          sleep = if_else(
+            lag(sleep) & lag(ActivityType) == 0 & ActivityType == 1 & lead(ActivityType) == 0,
+            TRUE,
+            sleep
+          ),
+          sleep = if_else(
+            lag(sleep) & lag(ActivityType, 2) == 0 & lag(ActivityType) == 1 & ActivityType == 0,
+            TRUE,
+            sleep
+          ),
+          sleep = if_else(
+            lead(sleep) & lag(ActivityType) == 0 & ActivityType == 1 & lead(ActivityType) == 0,
+            TRUE,
+            sleep
+          ),
+          sleep = if_else(
+            lead(sleep) & ActivityType == 0 & lead(ActivityType) == 1 & lead(ActivityType, 2) == 0,
+            TRUE,
+            sleep
+          )
+        ) %>%
+        
+        # Removing unnecessary variables
+        select(-sleep_end, -sleep_start, -total_end, -total_start) %>%
+        
+        # Ungrouping
+        ungroup()
+      
+      # Recording new sleep event count to be used to determine whether iteration should continue
+      new <- sum(df$sleep, na.rm = TRUE)
+    }
+    
+    # Once iteration has concluded...
+    df %<>%
+      
+      # Grouping by reference day
+      group_by(refday) %>%
+      
+      mutate(
+        # Determining proportion of time in each reference day occupied by each activity type
+        prop_sed = sum(Intervals[ActivityType == 0])/sum(Intervals),
+        prop_stand = sum(Intervals[ActivityType == 1])/sum(Intervals),
+        prop_step = sum(Intervals[ActivityType == 2])/sum(Intervals),
+        
+        # Rejecting steps during an event marked as sleep
+        steps = if_else(
+          sleep,
+          0L,
+          steps
+        ),
+        
+        # Marking events not marked as sleep as waking wear with their duration as a new variable
+        wwear = if_else(
+          sleep,
+          0,
+          as.double(Intervals)
+        ),
+        
+        # Summing steps and waking wear for each reference day
+        sum_steps = sum(steps),
+        sum_wwear = sum(wwear),
+        
+        # Invalidating days where:
+        ## * Any one activity occupies more than 95% of the time;
+        ## * Fewer than 500 valid steps were recorded or
+        ## * The waking wear time was less than 10 hours.
+        invalid_day = case_when(
+          prop_sed >= 0.95 | prop_stand >= 0.95 | prop_step >= 0.95 ~ TRUE,
+          sum_steps < 500 ~ TRUE,
+          sum_wwear < 36000 ~ TRUE,
+          TRUE ~ FALSE
+        )
+      ) %>%
+      
+      # Removing invalid days
+      filter(!invalid_day) %>%
+      
+      mutate(
+        # Recording the start of the first event in a series of sleep events as sleeptime
+        sleeptime = if_else(
+          sleep & !lag(sleep),
+          Time,
+          NA_POSIXct_
+        ),
+        
+        # Recording the end of the last event in a series of sleep events as waketime
+        waketime = if_else(
+          sleep & !lead(sleep),
+          Time + Intervals,
+          NA_POSIXct_
+        )
+      ) %>%
+      
+      # Removing all events not marked as sleeptime or waketime
+      filter(!is.na(sleeptime) | !is.na(waketime)) %>%
+    
+      # Retaining only reference day, sleeptime and waketime indicators
+      select(refday, sleeptime, waketime) %>%
+      
+      # Filling NAs with sleeptime downwards and waketime upwards, such that each row represents one sleep spell with a sleeptime and a waketime
+      fill(sleeptime, .direction = "down") %>%
+      fill(waketime, .direction = "up") %>%
+      
+      # Removing duplicate rows so there is only one row per sleep spell
+      distinct() %>%
+      
+      mutate(
+        # Deriving duration of a sleep spell as waketime - sleeptime
+        duration = abs(difftime(waketime, sleeptime, units = "secs")),
+        
+        # Summing sleep durations per reference day
+        sleepdur = sum(duration)
+      ) %>%
+      
+      # Removing unnecessary duration variable
+      select(-duration) %>%
+      
+      # Ungrouping
+      ungroup() %>%
+      
+      # Deriving median daily sleep duration if there are at least three values available, otherwise recording NA
+      mutate(md_winkler_sleepdur = if_else(
+        sum(!is.na(sleepdur)) >= 3,
+        median(sleepdur, na.rm = TRUE),
+        NA_real_
+      )) %>%
+      
+      # Removing unnecessary variables
+      select(-refday, -sleeptime, -waketime, -sleepdur) %>%
+      
+      # Removing duplicate rows so there is only one row left
+      distinct() %>%
+      
+      # Pulling participant ID from the filename and adding it to the row of data
+      mutate(ParticipantId = as.integer(str_sub(i, 1, 6)), .before = md_winkler_sleepdur)
+    
+    # Appending the participant's value to the running data frame
+    df_full %<>% rbind(df)
+    
+    # Removing working data frame
+    rm(df)
+  }
+  
+  # Output: a data frame containing the results for all of this node's participants
+  return(df_full)
+})
+
+# Stopping cluster
+stopCluster(cl)
+
+# Removing unnecessary cluster object and file lists
+rm(cl)
+rm(list = ls(pattern = "filelist"))
+```
+
+## Combining and saving data
+Finally, we can combine the parallel data frames to produce a single complete data frame, and write this to a .csv file.
+
+```{r write}
+# Binding data frames together
+df %<>% reduce(rbind)
+
+# Writing combined data frame to .csv file
+fwrite(df, "winkler_sleep.csv")
+```

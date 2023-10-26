@@ -1,0 +1,499 @@
+---
+title: "models_report"
+author: "Thomas E. Metherell"
+date: "2023-09-22"
+format:
+    html:
+        code-fold: true
+        toc: true
+---
+
+## Loading dependencies and targets
+
+```{r dependencies}
+library(knitr)
+library(targets)
+library(dplyr)
+library(magrittr)
+
+# Initial models
+rutter_5 <- tar_read(rutter_5)
+rutter_5_multi <- tar_read(rutter_5_multi)
+rutter_10 <- tar_read(rutter_10)
+rutter_10_multi <- tar_read(rutter_10_multi)
+cds <- tar_read(cds)
+cds_multi <- tar_read(cds_multi)
+malaise <- tar_read(malaise)
+malaise_multi <- tar_read(malaise_multi)
+beh_emo <- tar_read(beh_emo)
+beh_emo_multi <- tar_read(beh_emo_multi)
+int_beh <- tar_read(int_beh)
+int_beh_multi <- tar_read(int_beh_multi)
+ext_beh <- tar_read(ext_beh)
+ext_beh_multi <- tar_read(ext_beh_multi)
+
+# Mediation models
+rutter_5_med1 <- tar_read(rutter_5_med1)
+rutter_5_med2 <- tar_read(rutter_5_med2)
+rutter_10_med1 <- tar_read(rutter_10_med1)
+rutter_10_med2 <- tar_read(rutter_10_med2)
+cds_med1 <- tar_read(cds_med1)
+cds_med2 <- tar_read(cds_med2)
+malaise_med1 <- tar_read(malaise_med1)
+malaise_med2 <- tar_read(malaise_med2)
+beh_emo_med1 <- tar_read(beh_emo_med1)
+beh_emo_med2 <- tar_read(beh_emo_med2)
+int_beh_med1 <- tar_read(int_beh_med1)
+int_beh_med2 <- tar_read(int_beh_med2)
+ext_beh_med1 <- tar_read(ext_beh_med1)
+ext_beh_med2 <- tar_read(ext_beh_med2)
+
+# Sex-disaggregated models
+rutter_5_male <- tar_read(rutter_5_male)
+rutter_5_multi_male <- tar_read(rutter_5_multi_male)
+rutter_5_female <- tar_read(rutter_5_female)
+rutter_5_multi_female <- tar_read(rutter_5_multi_female)
+rutter_10_male <- tar_read(rutter_10_male)
+rutter_10_multi_male <- tar_read(rutter_10_multi_male)
+rutter_10_female <- tar_read(rutter_10_female)
+rutter_10_multi_female <- tar_read(rutter_10_multi_female)
+cds_male <- tar_read(cds_male)
+cds_multi_male <- tar_read(cds_multi_male)
+cds_female <- tar_read(cds_female)
+cds_multi_female <- tar_read(cds_multi_female)
+malaise_male <- tar_read(malaise_male)
+malaise_multi_male <- tar_read(malaise_multi_male)
+malaise_female <- tar_read(malaise_female)
+malaise_multi_female <- tar_read(malaise_multi_female)
+beh_emo_male <- tar_read(beh_emo_male)
+beh_emo_multi_male <- tar_read(beh_emo_multi_male)
+beh_emo_female <- tar_read(beh_emo_female)
+beh_emo_multi_female <- tar_read(beh_emo_multi_female)
+int_beh_male <- tar_read(int_beh_male)
+int_beh_multi_male <- tar_read(int_beh_multi_male)
+int_beh_female <- tar_read(int_beh_female)
+int_beh_multi_female <- tar_read(int_beh_multi_female)
+ext_beh_male <- tar_read(ext_beh_male)
+ext_beh_multi_male <- tar_read(ext_beh_multi_male)
+ext_beh_female <- tar_read(ext_beh_female)
+ext_beh_multi_female <- tar_read(ext_beh_multi_female)
+rutter_5_med1_male <- tar_read(rutter_5_med1_male)
+rutter_5_med2_male <- tar_read(rutter_5_med2_male)
+rutter_5_med1_female <- tar_read(rutter_5_med1_female)
+rutter_5_med2_female <- tar_read(rutter_5_med2_female)
+rutter_10_med1_male <- tar_read(rutter_10_med1_male)
+rutter_10_med2_male <- tar_read(rutter_10_med2_male)
+rutter_10_med1_female <- tar_read(rutter_10_med1_female)
+rutter_10_med2_female <- tar_read(rutter_10_med2_female)
+cds_med1_male <- tar_read(cds_med1_male)
+cds_med2_male <- tar_read(cds_med2_male)
+cds_med1_female <- tar_read(cds_med1_female)
+cds_med2_female <- tar_read(cds_med2_female)
+malaise_med1_male <- tar_read(malaise_med1_male)
+malaise_med2_male <- tar_read(malaise_med2_male)
+malaise_med1_female <- tar_read(malaise_med1_female)
+malaise_med2_female <- tar_read(malaise_med2_female)
+beh_emo_med1_male <- tar_read(beh_emo_med1_male)
+beh_emo_med2_male <- tar_read(beh_emo_med2_male)
+beh_emo_med1_female <- tar_read(beh_emo_med1_female)
+beh_emo_med2_female <- tar_read(beh_emo_med2_female)
+int_beh_med1_male <- tar_read(int_beh_med1_male)
+int_beh_med2_male <- tar_read(int_beh_med2_male)
+int_beh_med1_female <- tar_read(int_beh_med1_female)
+int_beh_med2_female <- tar_read(int_beh_med2_female)
+ext_beh_med1_male <- tar_read(ext_beh_med1_male)
+ext_beh_med2_male <- tar_read(ext_beh_med2_male)
+ext_beh_med1_female <- tar_read(ext_beh_med1_female)
+ext_beh_med2_female <- tar_read(ext_beh_med2_female)
+```
+
+## Defining function to print results
+
+```{r print_function}
+print_output <- function(output){
+    output %>% mutate_if(is.numeric, function(x) round(x, 3)) %>% kable(format = "markdown")
+}
+```
+
+## Initial models
+### Rutter score (age 5)
+#### Binary outcome (Poisson)
+
+```{r rutter5_poisson}
+print_output(rutter_5)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r rutter5_multi}
+print_output(rutter_5_multi)
+```
+
+### Rutter score (age 10)
+#### Binary outcome (Poisson)
+
+```{r rutter10_poisson}
+print_output(rutter_10)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r rutter10_multi}
+print_output(rutter_10_multi)
+```
+
+### Child Development Scale (age 10)
+#### Binary outcome (Poisson)
+
+```{r cds_poisson}
+print_output(cds)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r cds_multi}
+print_output(cds_multi)
+```
+
+### Malaise score (age 16)
+#### Binary outcome (Poisson)
+
+```{r malaise_poisson}
+print_output(malaise)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r malaise_multi}
+print_output(malaise_multi)
+```
+
+### Behavioural & emotional problems (age 16)
+#### Binary outcome (Poisson)
+
+```{r beh_emo_poisson}
+print_output(beh_emo)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r beh_emo_multi}
+print_output(beh_emo_multi)
+```
+
+### Internalising behaviour in childhood (age 16)
+#### Binary outcome (Poisson)
+
+```{r int_beh_poisson}
+print_output(int_beh)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r int_beh_multi}
+print_output(int_beh_multi)
+```
+
+### Externalising behaviour in childhood (age 16)
+#### Binary outcome (Poisson)
+
+```{r ext_beh_poisson}
+print_output(ext_beh)
+```
+
+#### Ternary outcome (multinomial)
+
+```{r ext_beh_multi}
+print_output(ext_beh_multi)
+```
+
+## Post-hoc mediation analyses
+### Rutter score (age 5)
+#### Association between childhood and adult mental health
+
+```{r rutter5_med1}
+print_output(rutter_5_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r rutter5_med2}
+print_output(rutter_5_med2)
+```
+
+### Rutter score (age 10)
+#### Association between childhood and adult mental health
+
+```{r rutter10_med1}
+print_output(rutter_10_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r rutter10_med2}
+print_output(rutter_10_med2)
+```
+
+### Child Development Scale (age 10)
+#### Association between childhood and adult mental health
+
+```{r cds_med1}
+print_output(cds_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r cds_med2}
+print_output(cds_med2)
+```
+
+### Malaise score (age 16)
+#### Association between childhood and adult mental health
+
+```{r malaise_med1}
+print_output(malaise_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r malaise_med2}
+print_output(malaise_med2)
+```
+
+### Behavioural & emotional problems (age 16)
+#### Association between childhood and adult mental health
+
+```{r beh_emo_med1}
+print_output(beh_emo_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r beh_emo_med2}
+print_output(beh_emo_med2)
+```
+
+### Internalising behaviour in childhood (age 16)
+#### Association between childhood and adult mental health
+
+```{r int_beh_med1}
+print_output(int_beh_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r int_beh_med2}
+print_output(int_beh_med2)
+```
+
+### Externalising behaviour in childhood (age 16)
+#### Association between childhood and adult mental health
+
+```{r ext_beh_med1}
+print_output(ext_beh_med1)
+```
+
+#### Association between adult mental health and sleep
+
+```{r ext_beh_med2}
+print_output(ext_beh_med2)
+```
+
+## Sex-disaggregated models
+### Initial models (male)
+#### Rutter score (age 5)
+
+```{r rutter5_male}
+print_output(rutter_5_male)
+print_output(rutter_5_multi_male)
+```
+
+#### Rutter score (age 10)
+
+```{r rutter10_male}
+print_output(rutter_10_male)
+print_output(rutter_10_multi_male)
+```
+
+#### Child Development Scale (age 10)
+
+```{r cds_male}
+print_output(cds_male)
+print_output(cds_multi_male)
+```
+
+#### Malaise score (age 16)
+
+```{r malaise_male}
+print_output(malaise_male)
+print_output(malaise_multi_male)
+```
+
+#### Behavioural & emotional problems (age 16)
+
+```{r beh_emo_male}
+print_output(beh_emo_male)
+print_output(beh_emo_multi_male)
+```
+
+#### Internalising behaviour in childhood (age 16)
+
+```{r int_beh_male}
+print_output(int_beh_male)
+print_output(int_beh_multi_male)
+```
+
+#### Externalising behaviour in childhood (age 16)
+
+```{r ext_beh_male}
+print_output(ext_beh_male)
+print_output(ext_beh_multi_male)
+```
+
+### Initial models (female)
+#### Rutter score (age 5)
+
+```{r rutter5_female}
+print_output(rutter_5_female)
+print_output(rutter_5_multi_female)
+```
+
+#### Rutter score (age 10)
+
+```{r rutter10_female}
+print_output(rutter_10_female)
+print_output(rutter_10_multi_female)
+```
+
+#### Child Development Scale (age 10)
+
+```{r cds_female}
+print_output(cds_female)
+print_output(cds_multi_female)
+```
+
+#### Malaise score (age 16)
+
+```{r malaise_female}
+print_output(malaise_female)
+print_output(malaise_multi_female)
+```
+
+#### Behavioural & emotional problems (age 16)
+
+```{r beh_emo_female}
+print_output(beh_emo_female)
+print_output(beh_emo_multi_female)
+```
+
+#### Internalising behaviour in childhood (age 16)
+
+```{r int_beh_female}
+print_output(int_beh_female)
+print_output(int_beh_multi_female)
+```
+
+#### Externalising behaviour in childhood (age 16)
+
+```{r ext_beh_female}
+print_output(ext_beh_female)
+print_output(ext_beh_multi_female)
+```
+
+### Mediation analyses (male)
+#### Rutter score (age 5)
+
+```{r rutter5_med_male}
+print_output(rutter_5_med1_male)
+print_output(rutter_5_med2_male)
+```
+
+#### Rutter score (age 10)
+
+```{r rutter10_med_male}
+print_output(rutter_10_med1_male)
+print_output(rutter_10_med2_male)
+```
+
+#### Child Development Scale (age 10)
+
+```{r cds_med_male}
+print_output(cds_med1_male)
+print_output(cds_med2_male)
+```
+
+#### Malaise score (age 16)
+```{r malaise_med_male}
+print_output(malaise_med1_male)
+print_output(malaise_med2_male)
+```
+
+#### Behavioural & emotional problems (age 16)
+
+```{r beh_emo_med_male}
+print_output(beh_emo_med1_male)
+print_output(beh_emo_med2_male)
+```
+
+#### Internalising behaviour in childhood (age 16)
+
+```{r int_beh_med_male}
+print_output(int_beh_med1_male)
+print_output(int_beh_med2_male)
+```
+
+#### Externalising behaviour in childhood (age 16)
+
+```{r ext_beh_med_male}
+print_output(ext_beh_med1_male)
+print_output(ext_beh_med2_male)
+```
+
+### Mediation analyses (female)
+#### Rutter score (age 5)
+
+```{r rutter5_med_female}
+print_output(rutter_5_med1_female)
+print_output(rutter_5_med2_female)
+```
+
+#### Rutter score (age 10)
+
+```{r rutter10_med_female}
+print_output(rutter_10_med1_female)
+print_output(rutter_10_med2_female)
+```
+
+#### Child Development Scale (age 10)
+
+```{r cds_med_female}
+print_output(cds_med1_female)
+print_output(cds_med2_female)
+```
+
+#### Malaise score (age 16)
+```{r malaise_med_female}
+print_output(malaise_med1_female)
+print_output(malaise_med2_female)
+```
+
+#### Behavioural & emotional problems (age 16)
+
+```{r beh_emo_med_female}
+print_output(beh_emo_med1_female)
+print_output(beh_emo_med2_female)
+```
+
+#### Internalising behaviour in childhood (age 16)
+
+```{r int_beh_med_female}
+print_output(int_beh_med1_female)
+print_output(int_beh_med2_female)
+```
+
+#### Externalising behaviour in childhood (age 16)
+
+```{r ext_beh_med_female}
+print_output(ext_beh_med1_female)
+print_output(ext_beh_med2_female)
+```

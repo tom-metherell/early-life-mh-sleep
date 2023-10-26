@@ -1,0 +1,442 @@
+---
+title: "2c_vanderberg"
+author: "Thomas E. Metherell"
+date: "2023-02-01"
+output: html_document
+---
+
+Script in series: "Associations between early life mental health indicators and sleep in adulthood"
+
+This script derives median sleep duration from BCS70 Age 46 accelerometry data using a modified version of Van der Berg et al.'s (2016) algorithm.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dependencies
+We start by loading the necessary dependencies.
+
+```{r dependencies}
+library(data.table)
+library(tidyverse)
+library(magrittr)
+library(chron)
+library(lubridate)
+library(parallel)
+```
+
+## Loading data
+We can now load the activPAL "summary" data files. These include, among other variables,
+* the participant ID
+* a "bout ID" to differentiate individual bouts
+* the date
+* the duration of each bout ("Intervals")
+
+```{r load_data}
+# Listing all "summary" data files
+filelist <- list.files(path = ".\\Summary")
+
+#######
+# Function: PAL
+# Input: fileno, an integer denoting the position of the desired data file in filelist
+# Method: the function reads the requested data file and returns only the needed columns
+# Output: a dataframe containing a reduced version of the input data file
+#######
+
+PAL <- function(fileno){
+  dataset <- fread(paste0(".\\Summary\\", filelist[fileno]))
+  dataset %<>% select(ParticipantId, BoutId, ActivityType, Date, StartTime, EndTime, Intervals)
+  return(dataset)
+}
+
+# Applying the PAL function to all data files in filelist
+for(i in 1:length(filelist)){
+  assign(
+    paste("data", i, sep = "_"),
+    PAL(i)
+  )
+}
+rm(i)
+
+# Removing the unnecessary filelist
+rm(filelist)
+```
+
+## Binding datasets
+We can now bind together the individual dataframes to form a single, larger dataframe `df`.
+
+```{r bind}
+# Binding all dataframes together
+df <- bind_rows(mget(ls(pattern = "data_")))
+
+# Removing individual dataframes
+rm(list = ls(pattern = "data_"))
+
+# Removing duplicate rows
+df %<>% distinct()
+```
+
+## Pre-processing times
+To prepare for the derivation of bedtime and waking time, some additional pre-processing needs to be performed.
+
+```{r times_prep}
+# Converting bout start and end times to chron "times" format
+df$StartTime %<>% times()
+df$EndTime %<>% times()
+
+df %<>%
+  # Grouping by participant ID
+  group_by(ParticipantId) %>%
+  
+  # In cases where the bout ID is duplicated, removing both rows (since duplicate rows have already been removed, where bout ID is duplicated there are conflicting data for the same bout ID and there is no way of knowing which are accurate)
+  filter(!duplicated(BoutId) & !duplicated(BoutId, fromLast = TRUE)) %>%
+  
+  # Ungrouping
+  ungroup() %>%
+  
+  # Creating a "reference day" variable to keep the data for each night together - times in the morning are associated with the previous day
+  mutate(refday = case_when(
+    StartTime >= times("12:00:00") ~ as_date(Date, format = "dmy"),
+    StartTime < times("12:00:00") ~ as_date(Date, format = "dmy") - 1
+  ), .after = Date) %>%
+  
+  # Grouping by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  # Creating cumulative time variables to encode the number of seconds elapsed between the start of the reference day and the start and end of each bout
+  mutate(cumtimestart = cumsum(Intervals) - Intervals,
+         cumtimeend = cumsum(Intervals)
+  ) %>%
+  
+  # Ungrouping
+  ungroup()
+```
+
+## Deriving bedtime
+We now follow (with minor variations) the procedure outlined by van der Berg et al. to derive bedtime for each participant on each day.
+
+```{r bedtime}
+# Listing the van der Berg et al. algorithm cutoffs for sedentary bout duration (respectively 7, 6, 5 and 4 hours)
+cutoffs <- c(25200, 21600, 18000, 14400)
+
+# Creating new data frame df_bedtime from df
+df_bedtime <- df %>%
+  
+  # Retaining only sedentary bouts between 19:00 and 12:00
+  filter(ActivityType == "Sitting" & (StartTime >= times("19:00:00") | StartTime <= times("12:00:00")) & (EndTime >= times("19:00:00") | EndTime <= times("12:00:00"))) %>%
+  
+  # Grouping by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  # Sorting within groups by date and start time
+  arrange(Date, StartTime, .by_group = TRUE) %>%
+  
+  # Rejecting sedentary bouts that occur before a active session of 15 minutes or longer before 01:00 (e.g. watching TV before going to bed)
+  mutate(reject = cumtimestart - lag(cumtimeend) >= 900 & (StartTime >= times("19:00:00") | StartTime < times("01:00:00") & lag(Intervals) > 9000)) %>%
+  fill(reject, .direction = "up") %>%
+  filter(!reject) %>%
+  select(-reject) %>%
+  
+  mutate(
+    # Annexing to each bout the durations of the following 4 bouts
+    lead1Intervals = lead(Intervals),
+    lead2Intervals = lead(Intervals, 2),
+    lead3Intervals = lead(Intervals, 3),
+    lead4Intervals = lead(Intervals, 4),
+    
+    # Encoding the duration of the current bout plus the following, then plus the following 2, etc.
+    duration12 = Intervals + lead1Intervals,
+    duration13 = duration12 + lead2Intervals,
+    duration14 = duration13 + lead3Intervals,
+    duration15 = duration14 + lead4Intervals,
+    
+    # Providing a marker of whether or not each of the above durations is interrupted by active bouts totalling more than 6 minutes. If it is, the marker is NA, otherwise the bout ID is returned
+    consec_marker2 = if_else(
+      lead(cumtimestart) - cumtimeend <= 360,
+      BoutId,
+      NA_integer_
+    ),
+    consec_marker3 = if_else(
+      (lead(cumtimestart) - cumtimeend) + (lead(cumtimestart, 2) - lead(cumtimeend)) <= 360,
+      BoutId,
+      NA_integer_
+    ),
+    consec_marker4 = if_else(
+      (lead(cumtimestart) - cumtimeend) + (lead(cumtimestart, 2) - lead(cumtimeend)) + (lead(cumtimestart, 3) - lead(cumtimeend, 2)) <= 360,
+       BoutId,
+       NA_integer_
+    ),
+    consec_marker5 = if_else(
+      (lead(cumtimestart) - cumtimeend) + (lead(cumtimestart, 2) - lead(cumtimeend)) + (lead(cumtimestart, 3) - lead(cumtimeend, 2)) + (lead(cumtimestart, 4) - lead(cumtimeend, 3)) <= 360,
+       BoutId,
+       NA_integer_
+     )
+  ) %>%
+  
+  # Encoding the time categories (that determine which cutoff is used) for the algorithm
+  mutate(timecat = case_when(
+    StartTime >= times("19:00:00") & StartTime < times("21:00:00") ~ 1,
+    StartTime >= times("21:00:00") & StartTime < times("22:00:00") ~ 2,
+    StartTime >= times("22:00:00") & StartTime < times("23:00:00") ~ 3,
+    (StartTime >= times("23:00:00") | StartTime < times("12:00:00")) ~ 4
+  ), .after = EndTime) %>%
+  
+  # Marking a bout as eligible to mark bedtime if:
+  ## * The bout alone exceeds the relevant cutoff;
+  ## * The bout + the following bout exceed the cutoff and the first bout exceeds 1 hour;
+  ## * The bout + the preceding bout exceed the cutoff and the second bout exceeds 1 hour;
+  ## * The bout + the following 2/3/4 bouts exceed the cutoff and all of them have durations exceeding 1 hour;
+  ## * The bout is the first of the last 5 bouts identified
+  mutate(bedtime_eligible = case_when(
+    Intervals >= cutoffs[timecat] ~ 1,
+    !is.na(consec_marker2) & duration12 >= cutoffs[timecat] & Intervals >= 3600 ~ 1,
+    !is.na(lag(consec_marker2)) & lag(duration12) >= cutoffs[timecat] & lag(Intervals) <= 3600 ~ 1,
+    !is.na(consec_marker3) & duration13 >= cutoffs[timecat] & Intervals >= 3600 & lead1Intervals >= 3600 & lead2Intervals >= 3600 ~ 1,
+    !is.na(consec_marker4) & duration14 >= cutoffs[timecat] & Intervals >= 3600 & lead1Intervals >= 3600 & lead2Intervals >= 3600 & lead3Intervals >= 3600 ~ 1, 
+    !is.na(consec_marker5) & duration15 >= cutoffs[timecat] & Intervals >= 3600 & lead1Intervals >= 3600 & lead2Intervals >= 3600 & lead3Intervals >= 3600 & lead4Intervals >= 3600 ~ 1,
+    consec_marker5 == last(na.omit(consec_marker5)) ~ 1,
+  )) %>%
+  
+  # Additionally marking the first sedentary bout as eligible to mark bedtime if no other bout is eligible and there are at least 4 hours of sedentary time in the reference day
+  mutate(bedtime_eligible = if_else(
+    row_number() == 1 & all(is.na(bedtime_eligible)) & sum(Intervals) >= 14400,
+    1,
+    bedtime_eligible
+  )) %>%
+  
+  # Marking the first bout with the bedtime_eligible marker as bedtime
+  mutate(bedtime = bedtime_eligible == 1 & !duplicated(bedtime_eligible == 1)) %>%
+  
+  # Removing unnecessary columns
+  select(-timecat, -(lead1Intervals:bedtime_eligible)) %>%
+  
+  # Ungrouping
+  ungroup()
+
+# Removing unnecessary cutoffs list
+rm(cutoffs)
+
+# Initialising bedtime column in the main data frame
+df$bedtime <- NA
+
+# Updating rows in df from df_bedtime to add the bedtime data to the main data frame, and removing df_bedtime
+df %<>% rows_update(df_bedtime, by = c("ParticipantId", "BoutId"))
+rm(df_bedtime)
+
+df %<>%
+  # Where the bedtime marker is present, setting bedtime as the start time of that bout
+  mutate(bedtime = case_when(bedtime ~ StartTime)) %>%
+  
+  # Grouping by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  # Filling the rest of the bouts in the reference day with the established bedtime
+  fill(bedtime, .direction = "downup") %>%
+  
+  # Ungrouping
+  ungroup()
+```
+
+## Deriving waking time
+We now follow (with minor variations) the procedure outlined by van der Berg et al. to derive waking time for each participant on each day.
+
+```{r waketime}
+# Marking as sleeping time any active bouts occurring between 03:00 and 06:00 which are followed by a sedentary bout exceeding 2 hours in duration 
+df %<>%
+  
+  # Grouping by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  mutate(
+    # Labelling sedentary bouts exceeding 2 hours and starting between 03:00 and 06:00
+    sed_following = if_else(
+      ActivityType == "Sitting" & StartTime >= times("03:00:00") & StartTime <= times("06:00:00") & Intervals > 7200,
+      TRUE,
+      FALSE
+    ),
+    
+    # Where there is exactly 1 bout labelled sed_following, creating variable encoding the end of that bout
+    sed_end = if_else(
+      sum(sed_following) == 1,
+      if(sum(sed_following) == 1) EndTime[sed_following] else times(NaN),
+      times(NaN)
+    ),
+    
+    # * Where there is more than 1 sedentary bout exceeding 2 hours starting between 03:00 and 06:00, rejecting all activity between 03:00 and 06:00
+    # * Where there is 1 sedentary bout exceeding 2 hours starting between 03:00 and 06:00, rejecting all activity before the end of that bout and before 06:00
+    ActivityType = case_when(
+      sum(sed_following) > 1 & ActivityType != "Sitting" & StartTime >= times("03:00:00") & StartTime <= times("06:00:00") ~ "Rejected activity",
+      sum(sed_following) == 1 & ActivityType != "Sitting" & StartTime >= times("03:00:00") & StartTime <= times("06:00:00") & StartTime < sed_end ~ "Rejected activity",
+      TRUE ~ ActivityType
+    )
+  ) %>%
+  
+  # Ungrouping
+  ungroup()
+
+# Listing the van der Berg et al. algorithm cutoffs for deriving waking time
+## cutoffs1: respectively 10, 5, 5.2, 5.4, 5.6, 5.8, 6, 6.2, 6.4 and 6.6 minutes
+## cutoffs2: respectively 40%, 20%, 10% and subsequently 8% of total time
+cutoffs1 <- c(600, 300, 312, 324, 336, 348, 360, 372, 384, 396)
+cutoffs2 <- c(0.4, 0.2, 0.1, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08, 0.08)
+
+# Creating a new data frame df_waketime from df
+df_waketime <- df %>%
+  
+  # Retaining only rows which are not sedentary/"rejected activity" bouts
+  filter(ActivityType != "Sitting" & ActivityType != "Rejected activity") %>%
+  
+  # Group by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  # Sorting within groups by date and start time
+  arrange(Date, StartTime, .by_group = TRUE) %>%
+
+  mutate(
+    # Marking the point at which searching begins as the start of the bout following a sedentary interval exceeding 4 hours
+    search_start = if_else(
+      cumtimestart - lag(cumtimeend) >= 14400,
+      1,
+      NA_real_
+    ),
+    
+    # If there are multiple such bouts, keeping only the first
+    search_start = if_else(
+      search_start == 1 & !duplicated(search_start == 1),
+      search_start,
+      NA_real_
+    ),
+    
+    # Replicating the search_start marker
+    eligible = search_start
+  ) %>%
+  
+  # Marking all bouts following the start of search as eligible and retaining only eligible bouts
+  fill(eligible, .direction = "down") %>%
+  filter(eligible == 1) %>%
+  select(-eligible) %>%
+  
+  # Creating a "bout group" marker to coalesce bouts of different kinds of activity into groups separated by sedentary bouts
+  mutate(non_consec = if_else(
+    row_number() == 1 | lag(BoutId) != BoutId - 1,
+    1,
+    0
+  )) %>%
+  mutate(BoutGroup = as.integer(cumsum(non_consec)), .after = BoutId) %>%
+  fill(BoutGroup, .direction = "down") %>%
+  select(-non_consec) %>%
+  
+  mutate(
+    # Creating a variable that encodes the cumulative activity time, up to the end of the current bout
+    act_cumtimeend = cumsum(Intervals),
+    
+    # Creating a variable that encodes the time of the start of search
+    searchstarttime = cumtimestart[search_start]
+  ) %>%
+  
+  # Removing unnecessary search_start column
+  select(-search_start) %>%
+  
+  # Filling searchstarttime within groups (participants & reference days)
+  fill(searchstarttime, .direction = "down") %>%
+  
+  # Ungrouping
+  ungroup() %>%
+  
+  # Marking a bout as eligible to mark waking time if the bout (group) meets both cutoffs
+  mutate(waketime_eligible = if_else(
+    BoutGroup <= 10 & act_cumtimeend > cutoffs1[BoutGroup] & act_cumtimeend/(cumtimeend - searchstarttime) > cutoffs2[BoutGroup],
+    1,
+    NA_real_
+  )) %>%
+  
+  # Grouping by participant ID, reference day and bout group
+  group_by(ParticipantId, refday, BoutGroup) %>%
+  
+  # Filling waketime_eligible within groups (such that each bout group is either marked as entirely eligible or entirely ineligible)
+  fill(waketime_eligible, .direction = "downup") %>%
+  
+  # Regrouping by only participant ID and reference day
+  ungroup() %>% group_by(ParticipantId, refday) %>%
+  
+  # Marking the first bout with the waketime_eligible marker as waketime
+  mutate(waketime = waketime_eligible == 1 & !duplicated(waketime_eligible == 1)) %>%
+  
+  # Removing unnecessary columns
+  select(-BoutGroup, -(cumtimeend:waketime_eligible)) %>%
+  
+  # Ungrouping
+  ungroup()
+
+# Removing unnecessary cutoff lists
+rm(list = c("cutoffs1", "cutoffs2"))
+
+# Initialising waking time variable in the main data frame
+df$waketime <- NA
+
+# Updating rows in df from df_waketime to add the waketime data to the main data frame, and removing df_waketime
+df %<>% rows_update(df_waketime, by = c("ParticipantId", "BoutId"))
+rm(df_waketime)
+
+df %<>%
+  # Where the bedtime marker is present, setting bedtime as the start time of that bout
+  mutate(waketime = case_when(waketime ~ StartTime)) %>%
+  
+  # Grouping by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  # Filling the rest of the bouts in the reference day with the established bedtime
+  fill(waketime, .direction = "downup") %>%
+  
+  # Ungrouping
+  ungroup()
+```
+
+## Deriving sleep duration
+We can now straightforwardly derive sleep duration by subtracting bedtime from waking time. Thereafter, the median sleep duration can be determined.
+
+```{r duration}
+df %<>%
+  # Grouping by participant ID and reference day
+  group_by(ParticipantId, refday) %>%
+  
+  # Deriving sleep duration as waketime - bedtime (excluding nonsensical cases and cases where no waketime before the end of the reference day could be identified)
+  mutate(sleepdur = case_when(
+    bedtime > waketime & bedtime < times("12:00:00") ~ NA_real_,
+    waketime > times("12:00:00") ~ NA_real_,
+    bedtime > waketime ~ as.double(waketime - bedtime + 1) * 86400,
+    waketime > bedtime ~ as.double(waketime - bedtime) * 86400
+  )) %>%
+  
+  # Retaining only the participant ID, reference day and sleep duration variables
+  select(ParticipantId, refday, sleepdur) %>%
+  
+  # Removing duplicate rows so there is only one row per participant per day
+  distinct() %>%
+  
+  # Regrouping by participant ID only
+  ungroup() %>% group_by(ParticipantId) %>%
+  
+  # Deriving median sleep duration in cases where there are at least 3 non-NA derived sleep durations, otherwise setting md_vdb_sleepdur to NA
+  mutate(md_vdb_sleepdur = if_else(
+    sum(!is.na(sleepdur)) >= 3,
+    median(sleepdur, na.rm = TRUE),
+    NA_real_
+  )) %>%
+  
+  # Retaining only the participant ID and median sleep duration variables
+  select(ParticipantId, md_vdb_sleepdur) %>%
+  
+  # Removing duplicate rows so there is only one row per participant
+  distinct() %>%
+  
+  # Ungrouping
+  ungroup()
+```
+
+## Saving data
+Finally, we can save the median sleep duration values to a new .csv file.
+
+```{r write_data}
+fwrite(df, "vanderberg_sleep.csv")
+```

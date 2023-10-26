@@ -1,0 +1,32 @@
+---
+title: "mice_report"
+author: "Thomas E. Metherell"
+date: "2023-09-22"
+format: 
+    html:
+        code-fold: true
+        toc: true
+---
+
+## Loading dependencies and target
+
+```{r dependencies}
+library(targets)
+library(mice)
+
+data_imputed_binary <- tar_read(data_imputed_binary)
+data_imputed_multi <- tar_read(data_imputed_multi)
+```
+
+## MICE diagnostic plots
+### Binary sleep variables dataset
+
+```{r plots_binary}
+plot(data_imputed_binary)
+```
+
+### Ternary sleep variables dataset
+
+```{r plots_multi}
+plot(data_imputed_multi)
+```

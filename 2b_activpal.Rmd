@@ -1,0 +1,123 @@
+---
+title: "2b_activpal"
+author: "Thomas E. Metherell"
+date: "2023-01-23"
+output: html_document
+---
+
+Script in series: "Associations between early life mental health indicators and sleep in adulthood"
+
+This script derives median sleep duration from BCS70 Age 46 accelerometry data using activPAL's algorithm.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Dependencies
+We start by loading the necessary dependencies.
+
+```{r dependencies}
+library(data.table)
+library(tidyverse)
+library(magrittr)
+```
+
+## Loading data
+We can now load the activPAL "summary" data files. These include, among other variables,
+* the participant ID
+* a "bout ID" to differentiate individual bouts
+* the date
+* the duration of each bout ("Intervals")
+
+```{r load_data}
+# Listing all "summary" data files
+filelist <- list.files(path = ".\\Summary")
+
+#######
+# Function: PAL_sleep
+# Input: fileno, an integer denoting the position of the desired data file in filelist
+# Method: the function reads the requested data file and returns only the bouts (rows) where the activPAL algorithm has determined that the participant was asleep, with only the needed columns
+# Output: a dataframe containing a reduced version of the input data file
+#######
+
+PAL_sleep <- function(fileno){
+  dataset <- fread(paste0(".\\Summary\\", filelist[fileno]))
+  dataset <- dataset[dataset$Sleep == 1,]
+  dataset %<>% select(ParticipantId, BoutId, Date, Intervals)
+  return(dataset)
+}
+
+# Applying the PAL_sleep function to all data files in filelist
+for(i in 1:length(filelist)){
+  assign(
+    paste("data", i, sep = "_"),
+    PAL_sleep(i)
+  )
+}
+
+# Removing the unnecessary filelist
+rm(filelist)
+```
+
+## Binding datasets
+We can now bind together the individual dataframes to form a single, larger dataframe `df`.
+
+```{r bind}
+# Binding all dataframes together
+df <- bind_rows(mget(ls(pattern = "data_")))
+
+# Removing individual dataframes
+rm(list = ls(pattern = "data_"))
+```
+
+## Deriving sleep duration
+We can now derive the sleep duration per day, and subsequently find the median value. As with the self-reported sleep diary data, a single sleep bout or median sleep duration of over 15 hours (= 54,000 seconds) is taken to be implausible and thus values over this limit are set to missing.
+
+```{r sleep_duration}
+# Rejecting bout duration values over 54,000 seconds
+is.na(df[, "Intervals"]) <- df[, "Intervals"] > 54000
+
+df %<>%
+  # Removing duplicate rows (the raw data contain a substantial number of duplications)
+  distinct() %>%
+  
+  # Grouping by participant ID and date
+  group_by(ParticipantId, Date) %>%
+  
+  # Deriving total sleep duration per day as the sum of the sleep bout durations during that day
+  mutate(dv_sleeptotal = sum(Intervals)) %>%
+  
+  # Removing unnecessary "Intervals" and "BoutId" variables
+  select(ParticipantId, Date, dv_sleeptotal) %>%
+  
+  # Removing duplicate rows to leave only 8 values per participant
+  distinct() %>%
+  
+  # Ungrouping and regrouping by participant ID only
+  ungroup() %>% group_by(ParticipantId) %>%
+  
+  # Arranging days in date order
+  arrange(Date) %>%
+  
+  # Removing first and last days for each participant (since these are not full days of device wear)
+  filter(row_number() != 1 & row_number() != n()) %>%
+  
+  # Finding median sleep duration (ignoring missing values)
+  mutate(md_pal_sleepdur = median(dv_sleeptotal, na.rm = TRUE)) %>%
+  
+  # Removing unnecessary "Date" and "dv_sleeptotal" columns
+  select(ParticipantId, md_pal_sleepdur) %>%
+  
+  # Removing duplicate rows to leave only 1 value per participant
+  distinct()
+
+# Rejecting median sleep durations of over 54,000 seconds
+is.na(df[, "md_pal_sleepdur"]) <- df[, "md_pal_sleepdur"] > 54000
+```
+
+## Saving data
+Finally, we can save the median sleep duration values to a new .csv file.
+
+```{r write}
+fwrite(df, ".\\activpal_sleep.csv")
+```
