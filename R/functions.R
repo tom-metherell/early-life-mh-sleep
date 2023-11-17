@@ -470,7 +470,7 @@ pois_regr_indiv <- function(dep_var, ind_vars, data){
     return(indiv_model_fit)
 }
 
-poisson_regression <- function(dep_var, ind_vars, var_of_interest, data){
+poisson_regression <- function(dep_var, ind_vars, var_of_interest, data, results){
     # Storing each imputed dataset as a separate dataframe
     for(i in 1:data$m){
         assign(
@@ -480,7 +480,7 @@ poisson_regression <- function(dep_var, ind_vars, var_of_interest, data){
     }
 
     # Setting number of cores for parallel computation
-    noCores <- 36
+    noCores <- 18
 
     # Establishing a cluster for parallel computation to save time
     cl = makeCluster(noCores)
@@ -512,31 +512,49 @@ poisson_regression <- function(dep_var, ind_vars, var_of_interest, data){
     stopCluster(cl)
 
     # Pooling results
-    results <- summary(pool(model_fit))
+    results[[dep_var]] <- summary(pool(model_fit))
 
-    # Producing tidy results table
-    ind_var <- var_of_interest
-    RR <- exp(results[results$term == var_of_interest,]$estimate)
-    RR.LCI <- exp(results[results$term == var_of_interest,]$estimate + qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
-    RR.UCI <- exp(results[results$term == var_of_interest,]$estimate - qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
-    p <- results[results$term == var_of_interest,]$p.value
-    Evalue <- if(RR.LCI < 1 && RR.UCI > 1) 1 else if(RR.UCI < 1) (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)) else if(RR.LCI > 1) RR.LCI + sqrt(RR.LCI*(RR.LCI - 1))
-
-    results_frame <- data.frame(dep_var, ind_var, RR, RR.LCI, RR.UCI, p, Evalue)
-
-    return(results_frame)
+    return(results)
 }
 
 pois_regr <- function(ind_vars, var_of_interest, data){
     # Listing dependent variables
     pois_list <- c("dv_sr_sleep_abn", "dv_sd_sleep_abn", "dv_pal_sleep_abn", "dv_vdb_sleep_abn", "dv_winkler_sleep_abn")
     
+    # Initialising list of results tables
+    results <- list()
+
     # Running Poisson regression for each dependent variable
     suppressWarnings({
-        results <- lapply(pois_list, function(X) poisson_regression(X, ind_vars, var_of_interest, data)) %>% reduce(rbind)
+        for(dep_var in pois_list){
+            results <- poisson_regression(dep_var, ind_vars, var_of_interest, data, results)
+        }
     })
 
     return(results)
+}
+
+pois_results_summarise <- function(results_list, var_of_interest){
+    results_frames_list <- list()
+    
+    # Producing tidy results table
+    for(i in seq_along(results_list)){
+        results <- results_list[[i]]
+
+        dep_var <- names(results_list)[i]
+        ind_var <- var_of_interest
+        RR <- exp(results[results$term == var_of_interest,]$estimate)
+        RR.LCI <- exp(results[results$term == var_of_interest,]$estimate + qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
+        RR.UCI <- exp(results[results$term == var_of_interest,]$estimate - qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
+        p <- results[results$term == var_of_interest,]$p.value
+        Evalue <- if(RR.LCI < 1 && RR.UCI > 1) 1 else if(RR.UCI < 1) (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)) else if(RR.LCI > 1) RR.LCI + sqrt(RR.LCI*(RR.LCI - 1))
+
+        results_frames_list[[i]] <- data.frame(dep_var, ind_var, RR, RR.LCI, RR.UCI, p, Evalue)
+    }
+
+    results_frame <- reduce(results_frames_list, rbind)
+
+    return(results_frame)
 }
 
 # Fits an individual multinomial regression model
@@ -546,7 +564,7 @@ multinom_regr_indiv <- function(dep_var, ind_vars, data){
     return(indiv_model_fit)
 }
 
-multinomial_regression <- function(dep_var, ind_vars, var_of_interest, data){
+multinomial_regression <- function(dep_var, ind_vars, var_of_interest, data, results){
     # Storing each imputed dataset as a separate dataframe
     for(i in 1:data$m){
         assign(
@@ -556,7 +574,7 @@ multinomial_regression <- function(dep_var, ind_vars, var_of_interest, data){
     }
 
     # Setting number of cores for parallel computation
-    noCores <- 36
+    noCores <- 18
 
     # Establishing a cluster for parallel computation to save time
     cl = makeCluster(noCores)
@@ -587,108 +605,61 @@ multinomial_regression <- function(dep_var, ind_vars, var_of_interest, data){
     stopCluster(cl)
 
     # Pooling results
-    results <- summary(pool(model_fit))
+    results[[dep_var]] <- summary(pool(model_fit))
 
-    # Producing tidy results table
-    ind_var <- var_of_interest
-    group <- results[results$term == var_of_interest,]$y.level
-    RRR <- exp(results[results$term == var_of_interest,]$estimate)
-    RRR.LCI <- exp(results[results$term == var_of_interest,]$estimate + qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
-    RRR.UCI <- exp(results[results$term == var_of_interest,]$estimate - qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
-    p <- results[results$term == var_of_interest,]$p.value
-    Evalue <- sapply(1:2, function(i){if(RRR.LCI[i] < 1 && RRR.UCI[i] > 1) 1 else if(RRR.UCI[i] < 1) (1/RRR.UCI[i]) + sqrt((1/RRR.UCI[i])*((1/RRR.UCI[i]) - 1)) else if(RRR.LCI[i] > 1) RRR.LCI[i] + sqrt(RRR.LCI[i]*(RRR.LCI[i] - 1))})
-
-    results_frame <- data.frame(dep_var, ind_var, group, RRR, RRR.LCI, RRR.UCI, p, Evalue)
-
-    return(results_frame)
+    return(results)
 }
 
 multinom_regr <- function(ind_vars, var_of_interest, data){
     # Listing dependent variables
     multinom_list <- c("dv_sr_sleep_abn_cat", "dv_sd_sleep_abn_cat", "dv_pal_sleep_abn_cat", "dv_vdb_sleep_abn_cat", "dv_winkler_sleep_abn_cat")
 
+    # Initialising list of results tables
+    results <- list()
+
     # Running multinomial regression for each dependent variable
     suppressWarnings({
-        results <- lapply(multinom_list, function(X) multinomial_regression(X, ind_vars, var_of_interest, data)) %>% reduce(rbind)
+        for(dep_var in multinom_list){
+            results <- multinomial_regression(dep_var, ind_vars, var_of_interest, data, results)
+        }
     })
 
     return(results)
+}
+
+multinom_results_summarise <- function(results_list, var_of_interest){
+    results_frames_list <- list()
+
+    # Producing tidy results table
+    for(i in seq_along(results_list)){
+        results <- results_list[[i]]
+
+        dep_var <- names(results_list)[i]
+        ind_var <- var_of_interest
+        group <- results[results$term == var_of_interest,]$y.level
+        RRR <- exp(results[results$term == var_of_interest,]$estimate)
+        RRR.LCI <- exp(results[results$term == var_of_interest,]$estimate + qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
+        RRR.UCI <- exp(results[results$term == var_of_interest,]$estimate - qnorm(0.05/2)*results[results$term == var_of_interest,]$std.error)
+        p <- results[results$term == var_of_interest,]$p.value
+        Evalue <- sapply(1:2, function(i){if(RRR.LCI[i] < 1 && RRR.UCI[i] > 1) 1 else if(RRR.UCI[i] < 1) (1/RRR.UCI[i]) + sqrt((1/RRR.UCI[i])*((1/RRR.UCI[i]) - 1)) else if(RRR.LCI[i] > 1) RRR.LCI[i] + sqrt(RRR.LCI[i]*(RRR.LCI[i] - 1))})
+
+        results_frames_list[[i]] <- data.frame(dep_var, ind_var, group, RRR, RRR.LCI, RRR.UCI, p, Evalue)
+    }
+
+    results_frame <- reduce(results_frames_list, rbind)
+
+    return(results_frame)
 }
 
 # Runs Poisson regression models with age-42 wellbeing measures as dependent variables
 med_pois_regr <- function(ind_vars, var_of_interest, data){
+    results <- list()
+    
     suppressWarnings({
-        results <- lapply(c("BD9MAL", "BD9WEMWB"), function(X) poisson_regression(X, ind_vars, var_of_interest, data)) %>% reduce(rbind)
+        for(dep_var in c("BD9MAL", "BD9WEMWB")){
+            results <- poisson_regression(dep_var, ind_vars, var_of_interest, data, results)
+        }
     })
 
     return(results)
-}
-
-forestplot <- function(data, rutter_5, rutter_10, cds, malaise, beh_emo, int_beh, ext_beh){
-    results <- reduce(list(rutter_5, rutter_10, cds, malaise, beh_emo, int_beh, ext_beh), rbind)
-
-    for(var in unique(results$ind_var)){
-        results[results$ind_var == var,]$RR <- results[results$ind_var == var,]$RR ^ sqrt(summary(pool(with(data, lm(as.formula(paste(var, "~ 1"))))))$ubar)
-        results[results$ind_var == var,]$RR.LCI <- results[results$ind_var == var,]$RR.LCI ^ sqrt(summary(pool(with(data, lm(as.formula(paste(var, "~ 1"))))))$ubar)
-        results[results$ind_var == var,]$RR.UCI <- results[results$ind_var == var,]$RR.UCI ^ sqrt(summary(pool(with(data, lm(as.formula(paste(var, "~ 1"))))))$ubar)
-    }
-
-    results %<>% mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
-        RR.rounded = sprintf("%.3f", round(RR, 3)),
-        p.rounded = sprintf("%.3f", round(p, 3)),
-        E.rounded = sprintf("%.3f", round(Evalue, 3)),
-        ind_var = case_match(ind_var,
-            "beh_emo" ~ "Behavioural & emotional problems (16)",
-            "cds" ~ "Child Development Scale (10)",
-            "ext_beh" ~ "Externalising behaviours (16)",
-            "int_beh" ~ "Internalising behaviours (16)",
-            "malaise" ~ "Malaise score (16)",
-            "rutter_5" ~ "Rutter score (5)",
-            "rutter_10" ~ "Rutter score (10)"
-        )
-    ) %>%
-    rename(mean = RR, lower = RR.LCI, upper = RR.UCI)
-
-    fp1 <- grid.grabExpr(print(results_fp("dv_sr_sleep_abn", "Self-reported average", results)))
-    fp2 <- grid.grabExpr(print(results_fp("dv_sd_sleep_abn", "Diary-derived average", results)))
-    fp3 <- grid.grabExpr(print(results_fp("dv_pal_sleep_abn", "activPAL algorithm", results)))          
-    fp4 <- grid.grabExpr(print(results_fp("dv_vdb_sleep_abn", "van der Berg et al. algorithm", results)))
-    fp5 <- grid.grabExpr(print(results_fp("dv_winkler_sleep_abn", "Winkler et al. algorithm", results)))
-
-    plotgrid <- gridExtra::grid.arrange(fp1, fp2, fp3, fp4, fp5, ncol = 1)
-    
-    return(plotgrid)
-}
-
-results_fp <- function(current_dep_var, title, results){
-    plot <- forestplot(
-        results[results$dep_var == current_dep_var,],
-        labeltext = c(ind_var, RR.rounded, p.rounded, E.rounded),
-        boxsize = 0.2,
-        xlab = "Risk ratio (standardised)",
-        xticks = c(0.9, 0.95, 1, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3),
-        zero = 1,
-        title = title
-    ) %>%
-    fp_add_lines() %>%
-    fp_set_style(align = "lccc") %>%
-    fp_add_header(
-        ind_var = "Variable", 
-        RR.rounded = fp_align_center("RR"),
-        p.rounded = fp_align_center("p"), 
-        E.rounded = fp_align_center("E-value")
-    )
-
-    return(plot)
-}
-
-save_plot <- function(plot, pages, filename){
-    ggsave(filename, plot, height = 29.7 * pages, width = 21, units = "cm")
-
-    filename
 }
