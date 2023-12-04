@@ -13,6 +13,7 @@ library(magrittr)
 library(mice)
 library(nnet)
 library(parallel)
+library(psych)
 library(purrr)
 library(quarto)
 library(sandwich)
@@ -486,30 +487,39 @@ list(
 
     # Performing multiple imputation
     tar_target(
-        data_imputed_binary,
+        data_imputed_binary_noprocess,
         multiple_imputation(
             data_clean_binary
         )
     ),
 
     tar_target(
-        data_imputed_multi,
+        data_imputed_multi_noprocess,
         multiple_imputation(
             data_clean_multi
         )
     ),
-    
-    # Producing report with trace plots
-    tar_quarto(
-        mice_report,
-        "mice_report.Qmd"
+
+    # Standardising main exposure variables
+    tar_target(
+        data_imputed_binary,
+        postprocess(
+            data_imputed_binary_noprocess
+        )
+    ),
+
+    tar_target(
+        data_imputed_multi,
+        postprocess(
+            data_imputed_multi_noprocess
+        )
     ),
 
     # Performing Poisson regression analyses
     tar_target(
         rutter_5,
         pois_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             data_imputed_binary
         )
@@ -526,7 +536,7 @@ list(
     tar_target(
         rutter_10,
         pois_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             data_imputed_binary
         )
@@ -543,7 +553,7 @@ list(
     tar_target(
         cds,
         pois_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             data_imputed_binary
         )
@@ -560,7 +570,7 @@ list(
     tar_target(
         malaise,
         pois_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             data_imputed_binary
         )
@@ -577,7 +587,7 @@ list(
     tar_target(
         beh_emo,
         pois_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             data_imputed_binary
         )
@@ -594,7 +604,7 @@ list(
     tar_target(
         int_beh,
         pois_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             data_imputed_binary
         )
@@ -611,7 +621,7 @@ list(
     tar_target(
         ext_beh,
         pois_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             data_imputed_binary
         )
@@ -629,7 +639,7 @@ list(
     tar_target(
         rutter_5_multi,
         multinom_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             data_imputed_multi
         )
@@ -646,7 +656,7 @@ list(
     tar_target(
         rutter_10_multi,
         multinom_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove", 
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove", 
             "BD3MRUTT", 
             data_imputed_multi
         )
@@ -663,7 +673,7 @@ list(
     tar_target(
         cds_multi,
         multinom_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             data_imputed_multi
         )
@@ -680,7 +690,7 @@ list(
     tar_target(
         malaise_multi,
         multinom_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             data_imputed_multi
         )
@@ -697,7 +707,7 @@ list(
     tar_target(
         beh_emo_multi,
         multinom_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             data_imputed_multi
         )
@@ -714,7 +724,7 @@ list(
     tar_target(
         int_beh_multi,
         multinom_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             data_imputed_multi
         )
@@ -731,7 +741,7 @@ list(
     tar_target(
         ext_beh_multi,
         multinom_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             data_imputed_multi
         )
@@ -749,7 +759,7 @@ list(
     tar_target(
         rutter_5_med1,
         med_pois_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             data_imputed_binary
         )
@@ -766,7 +776,7 @@ list(
     tar_target(
         rutter_5_med2,
         pois_regr(
-            "d119 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             data_imputed_binary
         )
@@ -783,7 +793,7 @@ list(
     tar_target(
         rutter_10_med1,
         med_pois_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             data_imputed_binary
         )
@@ -800,7 +810,7 @@ list(
     tar_target(
         rutter_10_med2,
         pois_regr(
-            "BD3MRUTT + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             data_imputed_binary
         )
@@ -817,7 +827,7 @@ list(
     tar_target(
         cds_med1,
         med_pois_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             data_imputed_binary
         )
@@ -834,7 +844,7 @@ list(
     tar_target(
         cds_med2,
         pois_regr(
-            "dv_cds_10 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             data_imputed_binary
         )
@@ -851,7 +861,7 @@ list(
     tar_target(
         malaise_med1,
         med_pois_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             data_imputed_binary
         )
@@ -868,7 +878,7 @@ list(
     tar_target(
         malaise_med2,
         pois_regr(
-            "BD4MAL + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             data_imputed_binary
         )
@@ -885,7 +895,7 @@ list(
     tar_target(
         beh_emo_med1,
         med_pois_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             data_imputed_binary
         )
@@ -902,7 +912,7 @@ list(
     tar_target(
         beh_emo_med2,
         pois_regr(
-            "rd6m_1 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             data_imputed_binary
         )
@@ -919,7 +929,7 @@ list(
     tar_target(
         int_beh_med1,
         med_pois_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             data_imputed_binary
         )
@@ -936,7 +946,7 @@ list(
     tar_target(
         int_beh_med2,
         pois_regr(
-            "intbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             data_imputed_binary
         )
@@ -953,7 +963,7 @@ list(
     tar_target(
         ext_beh_med1,
         med_pois_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             data_imputed_binary
         )
@@ -970,7 +980,7 @@ list(
     tar_target(
         ext_beh_med2,
         pois_regr(
-            "extbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             data_imputed_binary
         )
@@ -1009,7 +1019,7 @@ list(
     tar_target(
         rutter_5_male,
         pois_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed", 
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed", 
             "d119",
             male_data_binary
         )
@@ -1026,7 +1036,7 @@ list(
     tar_target(
         rutter_5_multi_male,
         multinom_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             male_data_multi
         )
@@ -1043,7 +1053,7 @@ list(
     tar_target(
         rutter_5_female,
         pois_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed", 
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed", 
             "d119",
             female_data_binary
         )
@@ -1060,7 +1070,7 @@ list(
     tar_target(
         rutter_5_multi_female,
         multinom_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             female_data_multi
         )
@@ -1077,7 +1087,7 @@ list(
     tar_target(
         rutter_10_male,
         pois_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             male_data_binary
         )
@@ -1094,7 +1104,7 @@ list(
     tar_target(
         rutter_10_multi_male,
         multinom_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             male_data_multi
         )
@@ -1111,7 +1121,7 @@ list(
     tar_target(
         rutter_10_female,
         pois_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             female_data_binary
         )
@@ -1128,7 +1138,7 @@ list(
     tar_target(
         rutter_10_multi_female,
         multinom_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             female_data_multi
         )
@@ -1145,7 +1155,7 @@ list(
     tar_target(
         cds_male,
         pois_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             male_data_binary
         )
@@ -1162,7 +1172,7 @@ list(
     tar_target(
         cds_multi_male,
         multinom_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             male_data_multi
         )
@@ -1179,7 +1189,7 @@ list(
     tar_target(
         cds_female,
         pois_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             female_data_binary
         )
@@ -1196,7 +1206,7 @@ list(
     tar_target(
         cds_multi_female,
         multinom_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             female_data_multi
         )
@@ -1213,7 +1223,7 @@ list(
     tar_target(
         malaise_male,
         pois_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             male_data_binary
         )
@@ -1230,7 +1240,7 @@ list(
     tar_target(
         malaise_multi_male,
         multinom_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             male_data_multi
         )
@@ -1247,7 +1257,7 @@ list(
     tar_target(
         malaise_female,
         pois_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             female_data_binary
         )
@@ -1264,7 +1274,7 @@ list(
     tar_target(
         malaise_multi_female,
         multinom_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             female_data_multi
         )
@@ -1281,7 +1291,7 @@ list(
     tar_target(
         beh_emo_male,
         pois_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             male_data_binary
         )
@@ -1298,7 +1308,7 @@ list(
     tar_target(
         beh_emo_multi_male,
         multinom_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             male_data_multi
         )
@@ -1315,7 +1325,7 @@ list(
     tar_target(
         beh_emo_female,
         pois_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             female_data_binary
         )
@@ -1332,7 +1342,7 @@ list(
     tar_target(
         beh_emo_multi_female,
         multinom_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             female_data_multi
         )
@@ -1349,7 +1359,7 @@ list(
     tar_target(
         int_beh_male,
         pois_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             male_data_binary
         )
@@ -1366,7 +1376,7 @@ list(
     tar_target(
         int_beh_multi_male,
         multinom_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             male_data_multi
         )
@@ -1383,7 +1393,7 @@ list(
     tar_target(
         int_beh_female,
         pois_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             female_data_binary
         )
@@ -1400,7 +1410,7 @@ list(
     tar_target(
         int_beh_multi_female,
         multinom_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             female_data_multi
         )
@@ -1417,7 +1427,7 @@ list(
     tar_target(
         ext_beh_male,
         pois_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             male_data_binary
         )
@@ -1434,7 +1444,7 @@ list(
     tar_target(
         ext_beh_multi_male,
         multinom_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             male_data_multi
         )
@@ -1451,7 +1461,7 @@ list(
     tar_target(
         ext_beh_female,
         pois_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             female_data_binary
         )
@@ -1468,7 +1478,7 @@ list(
     tar_target(
         ext_beh_multi_female,
         multinom_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             female_data_multi
         )
@@ -1485,7 +1495,7 @@ list(
     tar_target(
         rutter_5_med1_male,
         med_pois_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             male_data_binary
         )
@@ -1502,7 +1512,7 @@ list(
     tar_target(
         rutter_5_med2_male,
         pois_regr(
-            "d119 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             male_data_binary
         )
@@ -1519,7 +1529,7 @@ list(
     tar_target(
         rutter_5_med1_female,
         med_pois_regr(
-            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             female_data_binary
         )
@@ -1536,7 +1546,7 @@ list(
     tar_target(
         rutter_5_med2_female,
         pois_regr(
-            "d119 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + tenure + prmnh + crowd + ameni + brfed",
+            "d119 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + brfed",
             "d119",
             female_data_binary
         )
@@ -1553,7 +1563,7 @@ list(
     tar_target(
         rutter_10_med1_male,
         med_pois_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             male_data_binary
         )
@@ -1570,7 +1580,7 @@ list(
     tar_target(
         rutter_10_med2_male,
         pois_regr(
-            "BD3MRUTT + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             male_data_binary
         )
@@ -1587,7 +1597,7 @@ list(
     tar_target(
         rutter_10_med1_female,
         med_pois_regr(
-            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             female_data_binary
         )
@@ -1604,7 +1614,7 @@ list(
     tar_target(
         rutter_10_med2_female,
         pois_regr(
-            "BD3MRUTT + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD3MRUTT + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "BD3MRUTT",
             female_data_binary
         )
@@ -1621,7 +1631,7 @@ list(
     tar_target(
         cds_med1_male,
         med_pois_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             male_data_binary
         )
@@ -1638,7 +1648,7 @@ list(
     tar_target(
         cds_med2_male,
         pois_regr(
-            "dv_cds_10 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             male_data_binary
         )
@@ -1655,7 +1665,7 @@ list(
     tar_target(
         cds_med1_female,
         med_pois_regr(
-            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             female_data_binary
         )
@@ -1672,7 +1682,7 @@ list(
     tar_target(
         cds_med2_female,
         pois_regr(
-            "dv_cds_10 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + bmi + fclrg90 + tenure + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "dv_cds_10 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + sepmumbcs + crowd + brfed + resmove",
             "dv_cds_10",
             female_data_binary
         )
@@ -1689,7 +1699,7 @@ list(
     tar_target(
         malaise_med1_male,
         med_pois_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             male_data_binary
         )
@@ -1706,7 +1716,7 @@ list(
     tar_target(
         malaise_med2_male,
         pois_regr(
-            "BD4MAL + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             male_data_binary
         )
@@ -1723,7 +1733,7 @@ list(
     tar_target(
         malaise_med1_female,
         med_pois_regr(
-            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             female_data_binary
         )
@@ -1740,7 +1750,7 @@ list(
     tar_target(
         malaise_med2_female,
         pois_regr(
-            "BD4MAL + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "BD4MAL + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "BD4MAL",
             female_data_binary
         )
@@ -1757,7 +1767,7 @@ list(
     tar_target(
         beh_emo_med1_male,
         med_pois_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             male_data_binary
         )
@@ -1774,7 +1784,7 @@ list(
     tar_target(
         beh_emo_med2_male,
         pois_regr(
-            "rd6m_1 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             male_data_binary
         )
@@ -1791,7 +1801,7 @@ list(
     tar_target(
         beh_emo_med1_female,
         med_pois_regr(
-            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             female_data_binary
         )
@@ -1808,7 +1818,7 @@ list(
     tar_target(
         beh_emo_med2_female,
         pois_regr(
-            "rd6m_1 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "rd6m_1 + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "rd6m_1",
             female_data_binary
         )
@@ -1825,7 +1835,7 @@ list(
     tar_target(
         int_beh_med1_male,
         med_pois_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             male_data_binary
         )
@@ -1842,7 +1852,7 @@ list(
     tar_target(
         int_beh_med2_male,
         pois_regr(
-            "intbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             male_data_binary
         )
@@ -1859,7 +1869,7 @@ list(
     tar_target(
         int_beh_med1_female,
         med_pois_regr(
-            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             female_data_binary
         )
@@ -1876,7 +1886,7 @@ list(
     tar_target(
         int_beh_med2_female,
         pois_regr(
-            "intbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "intbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "intbcsz",
             female_data_binary
         )
@@ -1893,7 +1903,7 @@ list(
     tar_target(
         ext_beh_med1_male,
         med_pois_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             male_data_binary
         )
@@ -1910,7 +1920,7 @@ list(
     tar_target(
         ext_beh_med2_male,
         pois_regr(
-            "extbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             male_data_binary
         )
@@ -1927,7 +1937,7 @@ list(
     tar_target(
         ext_beh_med1_female,
         med_pois_regr(
-            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             female_data_binary
         )
@@ -1944,7 +1954,7 @@ list(
     tar_target(
         ext_beh_med2_female,
         pois_regr(
-            "extbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + dv_sc_age_16 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
+            "extbcsz + BD9MAL + BD9WEMWB + a0005a + a0043b + a0195a + a0278 + a0014 + dv_par_edu_birth + dv_sc_age_5 + e216a + dv_cog_abil_5 + dv_med_5 + d016a + dv_bas_g + dv_med_10 + bmi + fclrg90 + tenure + divorce + sepmumbcs + prmnh + crowd + ameni + brfed + resmove",
             "extbcsz",
             female_data_binary
         )
@@ -1958,8 +1968,34 @@ list(
         )
     ),
 
-    tar_quarto(
-        models_report,
-        "models_report.Qmd"
+    # Additional targets for supplementary information
+    tar_target(
+        tetrachoric_correlations,
+        tetra_cor(
+            data_imputed_binary
+        )
+    ),
+
+    tar_target(
+        polychoric_correlations,
+        poly_cor(
+            data_imputed_multi
+        )
+    ),
+
+    tar_target(
+        missingness,
+        summarise_missingness(
+            data_clean_binary,
+            data_clean_multi
+        )
+    ),
+
+    tar_target(
+        sleep_summary,
+        summarise_sleep(
+            data_imputed_binary,
+            data_imputed_multi
+        )
     )
 )

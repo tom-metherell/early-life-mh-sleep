@@ -1,0 +1,514 @@
+---
+title: "5_supplementary_information"
+author: "Thomas E. Metherell"
+date: "2023-11-20"
+format:
+    html:
+        code-fold: true
+        toc: true
+---
+
+## Loading dependencies and targets
+
+```{r dependencies}
+library(targets)
+library(dplyr)
+library(knitr)
+library(mice)
+library(psych)
+
+tetrachoric_correlations <- tar_read(tetrachoric_correlations)
+polychoric_correlations <- tar_read(polychoric_correlations)
+missingness <- tar_read(missingness)
+sleep_summary <- tar_read(sleep_summary)
+rutter_5 <- tar_read(rutter_5)
+rutter_10 <- tar_read(rutter_10)
+cds <- tar_read(cds)
+malaise <- tar_read(malaise)
+beh_emo <- tar_read(beh_emo)
+int_beh <- tar_read(int_beh)
+ext_beh <- tar_read(ext_beh)
+rutter_5_med2 <- tar_read(rutter_5_med2)
+rutter_10_med2 <- tar_read(rutter_10_med2)
+cds_med2 <- tar_read(cds_med2)
+malaise_med2 <- tar_read(malaise_med2)
+beh_emo_med2 <- tar_read(beh_emo_med2)
+int_beh_med2 <- tar_read(int_beh_med2)
+ext_beh_med2 <- tar_read(ext_beh_med2)
+```
+
+## Defining function used for rounding
+```{r round_fn}
+round_regression <- function(table, no_digits){
+    for(i in 1:ncol(table)){
+        if(is.numeric(table[[i]])){
+            table[[i]] <- round(table[[i]], no_digits)
+        }
+    }
+
+    return(table)
+}
+```
+
+## Missingness (%)
+
+```{r missingness}
+missingness |> round(1) |> kable()
+```
+
+## Sleep variables
+### Overall summary (%)
+
+```{r sleep_summary}
+sleep_summary |> round(1) |> kable()
+```
+
+### Correlations among sleep measures
+#### Tetrachoric correlations
+
+```{r tetrachoric}
+tetrachoric_correlations |> round(2) |> kable()
+```
+
+#### Polychoric correlations
+
+```{r polychoric}
+polychoric_correlations |> round(2) |> kable()
+```
+
+## Regression tables
+### Initial Poisson regressions
+#### Rutter score (age 5)
+##### Self-reported sleep
+
+```{r rutter_5_1}
+rutter_5[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r rutter_5_2}
+rutter_5[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r rutter_5_3}
+rutter_5[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r rutter_5_4}
+rutter_5[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r rutter_5_5}
+rutter_5[[5]] |> round_regression(2) |> kable()
+```
+
+#### Rutter score (age 10)
+##### Self-report
+
+```{r rutter_10_1}
+rutter_10[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r rutter_10_2}
+rutter_10[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r rutter_10_3}
+rutter_10[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r rutter_10_4}
+rutter_10[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r rutter_10_5}
+rutter_10[[5]] |> round_regression(2) |> kable()
+```
+
+#### Child Development Scale (age 10)
+##### Self-report
+
+```{r cds_1}
+cds[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r cds_2}
+cds[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r cds_3}
+cds[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r cds_4}
+cds[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r cds_5}
+cds[[5]] |> round_regression(2) |> kable()
+```
+
+#### Malaise Inventory (age 16)
+##### Self-report
+
+```{r malaise_1}
+malaise[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r malaise_2}
+malaise[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r malaise_3}
+malaise[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r malaise_4}
+malaise[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r malaise_5}
+malaise[[5]] |> round_regression(2) |> kable()
+```
+
+#### Behavioural and emotional problems (age 16)
+##### Self-report
+
+```{r beh_emo_1}
+beh_emo[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r beh_emo_2}
+beh_emo[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r beh_emo_3}
+beh_emo[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r beh_emo_4}
+beh_emo[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r beh_emo_5}
+beh_emo[[5]] |> round_regression(2) |> kable()
+```
+
+#### Internalising behaviour (age 16)
+##### Self-report
+
+```{r int_beh_1}
+int_beh[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r int_beh_2}
+int_beh[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r int_beh_3}
+int_beh[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r int_beh_4}
+int_beh[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r int_beh_5}
+int_beh[[5]] |> round_regression(2) |> kable()
+```
+
+#### Externalising behaviour (age 16)
+##### Self-report
+
+```{r ext_beh_1}
+ext_beh[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r ext_beh_2}
+ext_beh[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r ext_beh_3}
+ext_beh[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r ext_beh_4}
+ext_beh[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r ext_beh_5}
+ext_beh[[5]] |> round_regression(2) |> kable()
+```
+
+### Mediation models
+#### Rutter score (age 5)
+##### Self-reported sleep
+
+```{r med_rutter_5_1}
+rutter_5_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_rutter_5_2}
+rutter_5_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_rutter_5_3}
+rutter_5_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_rutter_5_4}
+rutter_5_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_rutter_5_5}
+rutter_5_med2[[5]] |> round_regression(2) |> kable()
+```
+
+#### Rutter score (age 10)
+##### Self-report
+
+```{r med_rutter_10_1}
+rutter_10_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_rutter_10_2}
+rutter_10_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_rutter_10_3}
+rutter_10_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_rutter_10_4}
+rutter_10_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_rutter_10_5}
+rutter_10_med2[[5]] |> round_regression(2) |> kable()
+```
+
+#### Child Development Scale (age 10)
+##### Self-report
+
+```{r med_cds_1}
+cds_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_cds_2}
+cds_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_cds_3}
+cds_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_cds_4}
+cds_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_cds_5}
+cds_med2[[5]] |> round_regression(2) |> kable()
+```
+
+#### Malaise Inventory (age 16)
+##### Self-report
+
+```{r med_malaise_1}
+malaise_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_malaise_2}
+malaise_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_malaise_3}
+malaise_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_malaise_4}
+malaise_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_malaise_5}
+malaise_med2[[5]] |> round_regression(2) |> kable()
+```
+
+#### Behavioural and emotional problems (age 16)
+##### Self-report
+
+```{r med_beh_emo_1}
+beh_emo_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_beh_emo_2}
+beh_emo_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_beh_emo_3}
+beh_emo_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_beh_emo_4}
+beh_emo_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_beh_emo_5}
+beh_emo_med2[[5]] |> round_regression(2) |> kable()
+```
+
+#### Internalising behaviour (age 16)
+##### Self-report
+
+```{r med_int_beh_1}
+int_beh_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_int_beh_2}
+int_beh_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_int_beh_3}
+int_beh_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_int_beh_4}
+int_beh_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_int_beh_5}
+int_beh_med2[[5]] |> round_regression(2) |> kable()
+```
+
+#### Externalising behaviour (age 16)
+##### Self-report
+
+```{r med_ext_beh_1}
+ext_beh_med2[[1]] |> round_regression(2) |> kable()
+```
+
+##### Sleep diary
+
+```{r med_ext_beh_2}
+ext_beh_med2[[2]] |> round_regression(2) |> kable()
+```
+
+##### activPAL algorithm
+
+```{r med_ext_beh_3}
+ext_beh_med2[[3]] |> round_regression(2) |> kable()
+```
+
+##### van der Berg et al. algorithm
+
+```{r med_ext_beh_4}
+ext_beh_med2[[4]] |> round_regression(2) |> kable()
+```
+
+##### Winkler et al. algorithm
+
+```{r med_ext_beh_5}
+ext_beh_med2[[5]] |> round_regression(2) |> kable()
+```

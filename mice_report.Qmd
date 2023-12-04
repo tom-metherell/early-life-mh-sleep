@@ -8,25 +8,25 @@ format:
         toc: true
 ---
 
-## Loading dependencies and target
+## Loading dependencies and targets
 
 ```{r dependencies}
 library(targets)
 library(mice)
 
-data_imputed_binary <- tar_read(data_imputed_binary)
-data_imputed_multi <- tar_read(data_imputed_multi)
+data_imputed_binary_noprocess <- tar_read(data_imputed_binary_noprocess)
+data_imputed_multi_noprocess <- tar_read(data_imputed_multi_noprocess)
 ```
 
 ## MICE diagnostic plots
 ### Binary sleep variables dataset
 
 ```{r plots_binary}
-plot(data_imputed_binary)
+plot(data_imputed_binary_noprocess)
 ```
 
 ### Ternary sleep variables dataset
 
 ```{r plots_multi}
-plot(data_imputed_multi)
+plot(data_imputed_multi_noprocess)
 ```

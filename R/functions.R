@@ -463,6 +463,20 @@ multiple_imputation <- function(data){
     return(imp_merged)
 }
 
+postprocess <- function(data){
+    data_list <- complete(data, "long", include = TRUE)
+
+    for(i in unique(data_list$.imp)){
+        for(j in c("d119", "BD3MRUTT", "dv_cds_10", "BD4MAL", "rd6m_1", "intbcsz", "extbcsz")){
+            data_list[data_list$.imp == i, j] <- scale(data_list[data_list$.imp == i, j])
+        }
+    }
+
+    data <- as.mids(data_list)
+
+    return(data)
+}
+
 # Fits an individual modified Poisson regression model
 pois_regr_indiv <- function(dep_var, ind_vars, data){
     indiv_model_fit <- coeftest(glm(as.formula(paste(dep_var, "~", ind_vars)), data, family = poisson(link = "log")), vcov. = sandwich)
@@ -662,4 +676,97 @@ med_pois_regr <- function(ind_vars, var_of_interest, data){
     })
 
     return(results)
+}
+
+tetra_cor <- function(data){
+    pooled_correlations <- data.frame(dv_sr_sleep_abn = rep(NA, 5), dv_sd_sleep_abn = rep(NA, 5), dv_pal_sleep_abn = rep(NA, 5), dv_vdb_sleep_abn = rep(NA, 5), dv_winkler_sleep_abn = rep(NA, 5))
+    row.names(pooled_correlations) <- c("dv_sr_sleep_abn", "dv_sd_sleep_abn", "dv_pal_sleep_abn", "dv_vdb_sleep_abn", "dv_winkler_sleep_abn")
+
+    for(i in row.names(pooled_correlations)){
+        for(j in row.names(pooled_correlations)){
+            if(i != j){
+                temp_correlations <- rep(NA, data$m)
+                temp_correlations_tables <- list()
+                for(k in 1:data$m){
+                    temp_correlations_tables[[k]] <- tetrachoric(complete(data, k)[, c(i, j)])
+                    temp_correlations[k] <- temp_correlations_tables[[k]]$rho[2]
+                }
+                pooled_correlations[i, j] <- mean(temp_correlations)
+                pooled_correlations[i, j] <- (exp(2 * pooled_correlations[i, j]) - 1) / (exp(2 * pooled_correlations[i, j]) + 1)
+            } else {
+                pooled_correlations[i, j] <- 1
+            }
+        }
+    }
+
+    return(pooled_correlations)
+}
+
+poly_cor <- function(data){
+    pooled_correlations_multi <- data.frame(dv_sr_sleep_abn_cat = rep(NA, 5), dv_sd_sleep_abn_cat = rep(NA, 5), dv_pal_sleep_abn_cat = rep(NA, 5), dv_vdb_sleep_abn_cat = rep(NA, 5), dv_winkler_sleep_abn_cat = rep(NA, 5))
+    row.names(pooled_correlations_multi) <- c("dv_sr_sleep_abn_cat", "dv_sd_sleep_abn_cat", "dv_pal_sleep_abn_cat", "dv_vdb_sleep_abn_cat", "dv_winkler_sleep_abn_cat")
+
+    for(i in row.names(pooled_correlations_multi)){
+        for(j in row.names(pooled_correlations_multi)){
+            if(i != j){
+                temp_correlations <- rep(NA, data$m)
+                temp_correlations_tables <- list()
+                for(k in 1:data$m){
+                    these_data <- complete(data, k)[, c(i, j)]
+                    for(l in 1:ncol(these_data)){
+                        these_data[, l] <- as.integer(these_data[, l])
+                    }
+                    temp_correlations_tables[[k]] <- polychoric(these_data)
+                    temp_correlations[k] <- temp_correlations_tables[[k]]$rho[2]
+                }
+                pooled_correlations_multi[i, j] <- mean(temp_correlations)
+                pooled_correlations_multi[i, j] <- (exp(2 * pooled_correlations_multi[i, j]) - 1) / (exp(2 * pooled_correlations_multi[i, j]) + 1)
+            } else {
+                pooled_correlations_multi[i, j] <- 1
+            }
+        }
+    }
+
+    return(pooled_correlations_multi)
+}
+
+summarise_missingness <- function(binary_data, multi_data){
+    # Initialising data frame of missingness amounts
+    missingness <- data.frame(missingness = rep(NA, 66))
+
+    row.names(missingness)[1:60] <- names(binary_data)
+    row.names(missingness)[61:65] <- c("dv_sr_sleep_abn_cat", "dv_sd_sleep_abn_cat", "dv_pal_sleep_abn_cat", "dv_vdb_sleep_abn_cat", "dv_winkler_sleep_abn_cat")
+    row.names(missingness)[66] <- "TOTAL"
+
+    for(i in 1:60){
+        missingness$missingness[i] <- sum(is.na(binary_data[, row.names(missingness)[i]])) / nrow(binary_data) * 100
+    }
+    for(i in 61:65){
+        missingness$missingness[i] <- sum(is.na(multi_data[, row.names(missingness)[i]])) / nrow(multi_data) * 100
+    }
+
+    missingness$missingness[66] <- sum(is.na(binary_data)) / nrow(binary_data) / ncol(binary_data) * 100
+
+    return(missingness)
+}
+
+summarise_sleep <- function(binary_data, multi_data){
+    sleep_summary <- data.frame(normal_binary = rep(NA, 5), abnormal = rep(NA, 5), short = rep(NA, 5), normal_multi = rep(NA, 5), long = rep(NA, 5))
+
+    row.names(sleep_summary) <- c("Self-report", "Sleep diary", "activPAL", "van der Berg et al.", "Winkler et al.")
+
+    vars <- c("sr", "sd", "pal", "vdb", "winkler")
+
+    binary_long <- complete(binary_data, "long")
+    multi_long <- complete(multi_data, "long")
+
+    for(i in seq_along(vars)){
+        sleep_summary[i, "normal_binary"] <- sum(binary_long[, paste("dv", vars[i], "sleep_abn", sep = "_")] == 0) / nrow(binary_long) * 100
+        sleep_summary[i, "abnormal"] <- sum(binary_long[, paste("dv", vars[i], "sleep_abn", sep = "_")] == 1) / nrow(binary_long) * 100
+        sleep_summary[i, "short"] <- sum(multi_long[, paste("dv", vars[i], "sleep_abn_cat", sep = "_")] == "Short") / nrow(multi_long) * 100
+        sleep_summary[i, "normal_multi"] <- sum(multi_long[, paste("dv", vars[i], "sleep_abn_cat", sep = "_")] == "Normal") / nrow(multi_long) * 100
+        sleep_summary[i, "long"] <- sum(multi_long[, paste("dv", vars[i], "sleep_abn_cat", sep = "_")] == "Long") / nrow(multi_long) * 100
+    }
+
+    return(sleep_summary)
 }

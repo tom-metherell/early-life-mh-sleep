@@ -115,15 +115,15 @@ results_fp <- function(results, current_dep_var, title, xticks){
         results[results$dep_var == current_dep_var,],
         labeltext = c(ind_var, RR.rounded, p.rounded, E.rounded),
         boxsize = 0.2,
-        xlab = "Risk ratio (standardised)",
-        xticks = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0),
+        xlab = "Risk ratio",
+        xticks = c(0.9, 1.0, 1.1, 1.2, 1.3, 1.4),
         zero = 1,
         title = title
     ) %>%
         fp_add_lines() %>%
         fp_set_style(align = "lccc") %>%
         fp_add_header(
-            ind_var = "Variable", 
+            ind_var = "Variable (age at collection)", 
             RR.rounded = fp_align_center("RR"),
             p.rounded = fp_align_center("p"), 
             E.rounded = fp_align_center("E-value")
@@ -133,39 +133,75 @@ results_fp <- function(results, current_dep_var, title, xticks){
 # Forest plot for multinomial results
 multi_results_fp <- function(multi_results, current_dep_var, current_group, title, xticks){
     forestplot(
-      multi_results[multi_results$dep_var == current_dep_var & multi_results$group == current_group,],
-      labeltext = c(ind_var, RRR.rounded, p.rounded, E.rounded),
-      boxsize = 0.2,
-      xlab = "Relative risk ratio (standardised)",
-      xticks = c(1.0, 1.5, 2, 2.5, 3, 3.5, 4),
-      zero = 1,
-      title = title
+        multi_results[multi_results$dep_var == current_dep_var & multi_results$group == current_group,],
+        labeltext = c(ind_var, RRR.rounded, p.rounded, E.rounded),
+        boxsize = 0.2,
+        xlab = "Relative risk ratio",
+        xticks = c(0.9, 1.0, 1.1, 1.2, 1.3, 1.4),
+        zero = 1,
+        title = title
     ) %>%
         fp_add_lines() %>%
         fp_set_style(align = "lccc") %>%
         fp_add_header(
-          ind_var = "Variable",
-          RRR.rounded = fp_align_center("RRR"),
-          p.rounded = fp_align_center("p"), 
-          E.rounded = fp_align_center("E-value")
+            ind_var = "Variable (age at collection)",
+            RRR.rounded = fp_align_center("RRR"),
+            p.rounded = fp_align_center("p"), 
+            E.rounded = fp_align_center("E-value")
         )
 }
 
 # Forest plot for mediation analysis results
 med_results_fp <- function(med_results, current_dep_var, title, xticks){
     forestplot(
-      med_results[med_results$dep_var == current_dep_var,],
-      labeltext = c(ind_var, RR.rounded, p.rounded, E.rounded),
-      boxsize = 0.2,
-      xlab = "Risk ratio (standardised)",
-      xticks = xticks,
-      zero = 1,
-      title = title
+        med_results[med_results$dep_var == current_dep_var,],
+        labeltext = c(ind_var, RR.rounded, p.rounded, E.rounded),
+        boxsize = 0.2,
+        xlab = "Risk ratio",
+        xticks = c(0.9, 1.0, 1.1, 1.2, 1.3, 1.4),
+        zero = 1,
+        title = title,
+        shapes_gp = fpShapesGp(
+            box = list(
+                gpar(col = "black", fill = "black"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red"),
+                gpar(col = "black", fill = "black"),
+                gpar(col = "red", fill = "red")
+            ),
+            lines = list(
+                gpar(col = "black"),
+                gpar(col = "black"),
+                gpar(col = "red"),
+                gpar(col = "black"),
+                gpar(col = "red"),
+                gpar(col = "black"),
+                gpar(col = "red"),
+                gpar(col = "black"),
+                gpar(col = "red"),
+                gpar(col = "black"),
+                gpar(col = "red"),
+                gpar(col = "black"),
+                gpar(col = "red"),
+                gpar(col = "black"),
+                gpar(col = "red")
+            )
+        )
     ) %>%
         fp_add_lines() %>%
         fp_set_style(align = "lccc") %>%
         fp_add_header(
-            ind_var = "Variable", 
+            ind_var = "Variable (age at collection)", 
             RR.rounded = fp_align_center("RR"),
             p.rounded = fp_align_center("p"),
             E.rounded = fp_align_center("E-value")
@@ -181,20 +217,8 @@ ind_var_names <- c("d119", "BD3MRUTT", "dv_cds_10", "BD4MAL", "rd6m_1", "intbcsz
 ```{r binary}
 results <- mget(ind_vars) %>% reduce(rbind)
 
-for(var in unique(results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(data_imputed_binary, sd(get(var)))))
-    results[results$ind_var == var,]$RR <- results[results$ind_var == var,]$RR ^ stdev
-    results[results$ind_var == var,]$RR.LCI <- results[results$ind_var == var,]$RR.LCI ^ stdev
-    results[results$ind_var == var,]$RR.UCI <- results[results$ind_var == var,]$RR.UCI ^ stdev
-}
-
 results %<>%
     mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RR.rounded = sprintf("%.3f", round(RR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -203,18 +227,18 @@ results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
     ) %>%
     rename(mean = RR, lower = RR.LCI, upper = RR.UCI)
 
-fp1 <- grid.grabExpr(print(results_fp(results, "dv_sr_sleep_abn", "Self-reported average", xticks = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0))))
-fp2 <- grid.grabExpr(print(results_fp(results, "dv_sd_sleep_abn", "Diary-derived average", xticks = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0))))
-fp3 <- grid.grabExpr(print(results_fp(results, "dv_pal_sleep_abn", "activPAL algorithm", xticks = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0))))     
-fp4 <- grid.grabExpr(print(results_fp(results, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", xticks = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0))))
-fp5 <- grid.grabExpr(print(results_fp(results, "dv_winkler_sleep_abn", "Winkler et al. algorithm", xticks = c(0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0))))
+fp1 <- grid.grabExpr(print(results_fp(results, "dv_sr_sleep_abn", "Self-reported average")))
+fp2 <- grid.grabExpr(print(results_fp(results, "dv_sd_sleep_abn", "Diary-derived average")))
+fp3 <- grid.grabExpr(print(results_fp(results, "dv_pal_sleep_abn", "activPAL algorithm")))     
+fp4 <- grid.grabExpr(print(results_fp(results, "dv_vdb_sleep_abn", "van der Berg et al. algorithm")))
+fp5 <- grid.grabExpr(print(results_fp(results, "dv_winkler_sleep_abn", "Winkler et al. algorithm")))
 
 plotgrid <- gridExtra::grid.arrange(fp1, fp2, fp3, fp4, fp5, ncol = 1)
 ggsave("plots/binary/forestplots.svg", plotgrid, height = 29.7, width = 21, units = "cm")
@@ -223,20 +247,8 @@ ggsave("plots/binary/forestplots.svg", plotgrid, height = 29.7, width = 21, unit
 ```{r multi}
 multi_results <- mget(paste(ind_vars, "multi", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(multi_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(data_imputed_multi, sd(get(var)))))
-    multi_results[multi_results$ind_var == var,]$RRR <- multi_results[multi_results$ind_var == var,]$RRR ^ stdev
-    multi_results[multi_results$ind_var == var,]$RRR.LCI <- multi_results[multi_results$ind_var == var,]$RRR.LCI ^ stdev
-    multi_results[multi_results$ind_var == var,]$RRR.UCI <- multi_results[multi_results$ind_var == var,]$RRR.UCI ^ stdev
-}
-
 multi_results %<>% 
     mutate(
-        Evalue = case_when(
-            RRR.UCI < 1 ~ (1/RRR.UCI) + sqrt((1/RRR.UCI)*((1/RRR.UCI) - 1)),
-            RRR.LCI > 1 ~ RRR.LCI + sqrt(RRR.LCI*(RRR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RRR.rounded = sprintf("%.3f", round(RRR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -245,7 +257,7 @@ multi_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
@@ -275,20 +287,8 @@ ggsave("plots/multi/combinedmulti_forestplots.svg", combinedmulti_plotgrid, heig
 ```{r med}
 med_results <- mget(paste(ind_vars, "med2", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(med_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(data_imputed_binary, sd(get(var)))))
-    med_results[med_results$ind_var == var,]$RR <- med_results[med_results$ind_var == var,]$RR ^ stdev
-    med_results[med_results$ind_var == var,]$RR.LCI <- med_results[med_results$ind_var == var,]$RR.LCI ^ stdev
-    med_results[med_results$ind_var == var,]$RR.UCI <- med_results[med_results$ind_var == var,]$RR.UCI ^ stdev
-}
-
 med_results %<>%
     mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RR.rounded = sprintf("%.3f", round(RR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -297,40 +297,31 @@ med_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
     ) %>%
     rename(mean = RR, lower = RR.LCI, upper = RR.UCI)
 
-fp16 <- grid.grabExpr(print(med_results_fp(med_results, "dv_sr_sleep_abn", "Self-reported average", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp17 <- grid.grabExpr(print(med_results_fp(med_results, "dv_sd_sleep_abn", "Diary-derived average", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp18 <- grid.grabExpr(print(med_results_fp(med_results, "dv_pal_sleep_abn", "activPAL algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp19 <- grid.grabExpr(print(med_results_fp(med_results, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp20 <- grid.grabExpr(print(med_results_fp(med_results, "dv_winkler_sleep_abn", "Winkler et al. algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
+results_with_med <- bind_rows(results, med_results) %>% arrange(rep(seq_len(nrow(results)), length = n()))
+results_with_med$ind_var[seq_len(nrow(results_with_med)/2) * 2] <- "(adjusted for age 42 mental health)"
+
+fp16 <- grid.grabExpr(print(med_results_fp(results_with_med, "dv_sr_sleep_abn", "Self-reported average", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp17 <- grid.grabExpr(print(med_results_fp(results_with_med, "dv_sd_sleep_abn", "Diary-derived average", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp18 <- grid.grabExpr(print(med_results_fp(results_with_med, "dv_pal_sleep_abn", "activPAL algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp19 <- grid.grabExpr(print(med_results_fp(results_with_med, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp20 <- grid.grabExpr(print(med_results_fp(results_with_med, "dv_winkler_sleep_abn", "Winkler et al. algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
 
 med_plotgrid <- gridExtra::grid.arrange(fp16, fp17, fp18, fp19, fp20, ncol = 1)
-ggsave("plots/mediation/med_forestplots.svg", med_plotgrid, height = 29.7, width = 21, units = "cm")
+ggsave("plots/mediation/med_forestplots.svg", med_plotgrid, height = 59.4, width = 21, units = "cm")
 ```
 
 ```{r binary_male}
 male_results <- mget(paste(ind_vars, "male", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(male_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(male_data_binary, sd(get(var)))))
-    male_results[male_results$ind_var == var,]$RR <- male_results[male_results$ind_var == var,]$RR ^ stdev
-    male_results[male_results$ind_var == var,]$RR.LCI <- male_results[male_results$ind_var == var,]$RR.LCI ^ stdev
-    male_results[male_results$ind_var == var,]$RR.UCI <- male_results[male_results$ind_var == var,]$RR.UCI ^ stdev
-}
-
 male_results %<>%
     mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RR.rounded = sprintf("%.3f", round(RR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -339,7 +330,7 @@ male_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
@@ -359,20 +350,8 @@ ggsave("plots/binary/male_forestplots.svg", male_plotgrid, height = 29.7, width 
 ```{r binary_female}
 female_results <- mget(paste(ind_vars, "female", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(female_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(female_data_binary, sd(get(var)))))
-    female_results[female_results$ind_var == var,]$RR <- female_results[female_results$ind_var == var,]$RR ^ stdev
-    female_results[female_results$ind_var == var,]$RR.LCI <- female_results[female_results$ind_var == var,]$RR.LCI ^ stdev
-    female_results[female_results$ind_var == var,]$RR.UCI <- female_results[female_results$ind_var == var,]$RR.UCI ^ stdev
-}
-
 female_results %<>%
     mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RR.rounded = sprintf("%.3f", round(RR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -381,7 +360,7 @@ female_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
@@ -401,20 +380,8 @@ ggsave("plots/binary/female_forestplots.svg", female_plotgrid, height = 29.7, wi
 ```{r multi_male}
 multi_male_results <- mget(paste(ind_vars, "multi_male", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(multi_male_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(male_data_multi, sd(get(var)))))
-    multi_male_results[multi_male_results$ind_var == var,]$RRR <- multi_male_results[multi_male_results$ind_var == var,]$RRR ^ stdev
-    multi_male_results[multi_male_results$ind_var == var,]$RRR.LCI <- multi_male_results[multi_male_results$ind_var == var,]$RRR.LCI ^ stdev
-    multi_male_results[multi_male_results$ind_var == var,]$RRR.UCI <- multi_male_results[multi_male_results$ind_var == var,]$RRR.UCI ^ stdev
-}
-
 multi_male_results %<>% 
     mutate(
-        Evalue = case_when(
-            RRR.UCI < 1 ~ (1/RRR.UCI) + sqrt((1/RRR.UCI)*((1/RRR.UCI) - 1)),
-            RRR.LCI > 1 ~ RRR.LCI + sqrt(RRR.LCI*(RRR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RRR.rounded = sprintf("%.3f", round(RRR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -423,7 +390,7 @@ multi_male_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
@@ -453,20 +420,8 @@ ggsave("plots/multi/male_combinedmulti_forestplots.svg", male_combinedmulti_plot
 ```{r multi_female}
 multi_female_results <- mget(paste(ind_vars, "multi_female", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(multi_female_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(female_data_multi, sd(get(var)))))
-    multi_female_results[multi_female_results$ind_var == var,]$RRR <- multi_female_results[multi_female_results$ind_var == var,]$RRR ^ stdev
-    multi_female_results[multi_female_results$ind_var == var,]$RRR.LCI <- multi_female_results[multi_female_results$ind_var == var,]$RRR.LCI ^ stdev
-    multi_female_results[multi_female_results$ind_var == var,]$RRR.UCI <- multi_female_results[multi_female_results$ind_var == var,]$RRR.UCI ^ stdev
-}
-
 multi_female_results %<>% 
     mutate(
-        Evalue = case_when(
-            RRR.UCI < 1 ~ (1/RRR.UCI) + sqrt((1/RRR.UCI)*((1/RRR.UCI) - 1)),
-            RRR.LCI > 1 ~ RRR.LCI + sqrt(RRR.LCI*(RRR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RRR.rounded = sprintf("%.3f", round(RRR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -475,7 +430,7 @@ multi_female_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
@@ -505,20 +460,8 @@ ggsave("plots/multi/female_combinedmulti_forestplots.svg", female_combinedmulti_
 ```{r med_male}
 med_male_results <- mget(paste(ind_vars, "med2_male", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(med_male_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(data_imputed_binary, sd(get(var)))))
-    med_male_results[med_male_results$ind_var == var,]$RR <- med_male_results[med_male_results$ind_var == var,]$RR ^ stdev
-    med_male_results[med_male_results$ind_var == var,]$RR.LCI <- med_male_results[med_male_results$ind_var == var,]$RR.LCI ^ stdev
-    med_male_results[med_male_results$ind_var == var,]$RR.UCI <- med_male_results[med_male_results$ind_var == var,]$RR.UCI ^ stdev
-}
-
 med_male_results %<>%
     mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RR.rounded = sprintf("%.3f", round(RR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -527,40 +470,31 @@ med_male_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
     ) %>%
     rename(mean = RR, lower = RR.LCI, upper = RR.UCI)
 
-fp51 <- grid.grabExpr(print(med_results_fp(med_male_results, "dv_sr_sleep_abn", "Self-reported average", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp52 <- grid.grabExpr(print(med_results_fp(med_male_results, "dv_sd_sleep_abn", "Diary-derived average", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp53 <- grid.grabExpr(print(med_results_fp(med_male_results, "dv_pal_sleep_abn", "activPAL algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp54 <- grid.grabExpr(print(med_results_fp(med_male_results, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp55 <- grid.grabExpr(print(med_results_fp(med_male_results, "dv_winkler_sleep_abn", "Winkler et al. algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
+male_results_with_med <- bind_rows(male_results, med_male_results) %>% arrange(rep(seq_len(nrow(male_results)), length = n()))
+male_results_with_med$ind_var[seq_len(nrow(male_results_with_med)/2) * 2] <- "(adjusted for age 42 mental health)"
+
+fp51 <- grid.grabExpr(print(med_results_fp(male_results_with_med, "dv_sr_sleep_abn", "Self-reported average", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp52 <- grid.grabExpr(print(med_results_fp(male_results_with_med, "dv_sd_sleep_abn", "Diary-derived average", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp53 <- grid.grabExpr(print(med_results_fp(male_results_with_med, "dv_pal_sleep_abn", "activPAL algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp54 <- grid.grabExpr(print(med_results_fp(male_results_with_med, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp55 <- grid.grabExpr(print(med_results_fp(male_results_with_med, "dv_winkler_sleep_abn", "Winkler et al. algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
 
 med_male_plotgrid <- gridExtra::grid.arrange(fp51, fp52, fp53, fp54, fp55, ncol = 1)
-ggsave("plots/mediation/med_male_forestplots.svg", med_male_plotgrid, height = 29.7, width = 21, units = "cm")
+ggsave("plots/mediation/med_male_forestplots.svg", med_male_plotgrid, height = 59.4, width = 21, units = "cm")
 ```
 
 ```{r med_female}
 med_female_results <- mget(paste(ind_vars, "med2_female", sep = "_")) %>% reduce(rbind)
 
-for(var in unique(med_female_results$ind_var)){
-    stdev <- sqrt(withPool_MI(with(data_imputed_binary, sd(get(var)))))
-    med_female_results[med_female_results$ind_var == var,]$RR <- med_female_results[med_female_results$ind_var == var,]$RR ^ stdev
-    med_female_results[med_female_results$ind_var == var,]$RR.LCI <- med_female_results[med_female_results$ind_var == var,]$RR.LCI ^ stdev
-    med_female_results[med_female_results$ind_var == var,]$RR.UCI <- med_female_results[med_female_results$ind_var == var,]$RR.UCI ^ stdev
-}
-
 med_female_results %<>%
     mutate(
-        Evalue = case_when(
-            RR.UCI < 1 ~ (1/RR.UCI) + sqrt((1/RR.UCI)*((1/RR.UCI) - 1)),
-            RR.LCI > 1 ~ RR.LCI + sqrt(RR.LCI*(RR.LCI - 1)),
-            TRUE ~ 1
-        ),
         RR.rounded = sprintf("%.3f", round(RR, 3)),
         p.rounded = sprintf("%.3f", round(p, 3)),
         E.rounded = sprintf("%.3f", round(Evalue, 3)),
@@ -569,19 +503,22 @@ med_female_results %<>%
             ind_var == "dv_cds_10" ~ "Child Development Scale (10)",
             ind_var == "extbcsz" ~ "Externalising behaviours (16)",
             ind_var == "intbcsz" ~ "Internalising behaviours (16)",
-            ind_var == "BD4MAL" ~ "Malaise score (16)",
+            ind_var == "BD4MAL" ~ "Malaise score (16)*",
             ind_var == "d119" ~ "Rutter score (5)",
             ind_var == "BD3MRUTT" ~ "Rutter score (10)"
         )
     ) %>%
     rename(mean = RR, lower = RR.LCI, upper = RR.UCI)
 
-fp56 <- grid.grabExpr(print(med_results_fp(med_female_results, "dv_sr_sleep_abn", "Self-reported average", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp57 <- grid.grabExpr(print(med_results_fp(med_female_results, "dv_sd_sleep_abn", "Diary-derived average", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp58 <- grid.grabExpr(print(med_results_fp(med_female_results, "dv_pal_sleep_abn", "activPAL algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp59 <- grid.grabExpr(print(med_results_fp(med_female_results, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
-fp60 <- grid.grabExpr(print(med_results_fp(med_female_results, "dv_winkler_sleep_abn", "Winkler et al. algorithm", c(0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6))))
+female_results_with_med <- bind_rows(female_results, med_female_results) %>% arrange(rep(seq_len(nrow(female_results)), length = n()))
+female_results_with_med$ind_var[seq_len(nrow(female_results_with_med)/2) * 2] <- "(adjusted for age 42 mental health)"
+
+fp56 <- grid.grabExpr(print(med_results_fp(female_results_with_med, "dv_sr_sleep_abn", "Self-reported average", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp57 <- grid.grabExpr(print(med_results_fp(female_results_with_med, "dv_sd_sleep_abn", "Diary-derived average", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp58 <- grid.grabExpr(print(med_results_fp(female_results_with_med, "dv_pal_sleep_abn", "activPAL algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp59 <- grid.grabExpr(print(med_results_fp(female_results_with_med, "dv_vdb_sleep_abn", "van der Berg et al. algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
+fp60 <- grid.grabExpr(print(med_results_fp(female_results_with_med, "dv_winkler_sleep_abn", "Winkler et al. algorithm", c(0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0))))
 
 med_female_plotgrid <- gridExtra::grid.arrange(fp56, fp57, fp58, fp59, fp60, ncol = 1)
-ggsave("plots/mediation/med_female_forestplots.svg", med_female_plotgrid, height = 29.7, width = 21, units = "cm")
+ggsave("plots/mediation/med_female_forestplots.svg", med_female_plotgrid, height = 59.4, width = 21, units = "cm")
 ```
