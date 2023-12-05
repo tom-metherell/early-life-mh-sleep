@@ -7,6 +7,8 @@ There are a number of steps to the analysis. The underlying raw data are availab
 * CLOSER harmonised variables: via the [UK Data Service](https://doi.org/10.5255/UKDA-Series-2000111).
 * Raw sleep diary, accelerometry data and derived sleep variables: by application to the [Centre for Longitudinal Studies](https://cls.ucl.ac.uk/data-access-training/data-access/accessing-data-directly-from-cls/).
 
+Check the code for the file structure used to store the raw data, or you can store the data elsewhere and change the filepaths present in the code.
+
 ## 2. Deriving sleep durations from accelerometry
 These R markdown (`.Rmd`) scripts were rendered separately and do not use the `renv` environment present in the repository. Use `R` version 4.2.0.
 
