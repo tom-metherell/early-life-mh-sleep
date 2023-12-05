@@ -11,7 +11,7 @@ There are a number of steps to the analysis. The underlying raw data are availab
 These R markdown (`.Rmd`) scripts were rendered separately and do not use the `renv` environment present in the repository. Use `R` version 4.2.0.
 
 ## 3. Cleaning survey data, incorporating sleep estimates and performing regressions
-These steps use the `targets` framework and `renv` environment present in the repository. After producing or acquiring the derived sleep estimates, you can run these steps by running `targets::tar_make()` in R 4.2.0 inside the repository.
+These steps use the `targets` framework and `renv` environment present in the repository. After producing or acquiring the derived sleep estimates, you can run these steps by running `targets::tar_make()` in `R` 4.2.0 inside the repository.
 
 ## 4. Plots
 Because of technological limitations, the plots must be rendered separately after the completion of the cleaning and analysis steps by rendering the Quarto file `4_plots.Qmd`. Use `R` version 4.2.0 and the `renv` environment present in the repository. The output `.html` file is also provided in the repository.
