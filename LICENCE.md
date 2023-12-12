@@ -1,4 +1,4 @@
-All software in this repository is licensed under the MIT Licence **except the files `2d_winkler.Rmd` and `2d_winkler.html`**, which are under the more restrictive CC-BY licence. For more information see [https://github.com/tom-metherell/early-life-mh-sleep/blob/main/THIRDPARTY.md](`THIRDPARTY.md`).
+All software in this repository is licensed under the MIT Licence **except the files `2d_winkler.Rmd` and `2d_winkler.html`**, which are under the more restrictive CC-BY licence. For more information see [`THIRDPARTY.md`](https://github.com/tom-metherell/early-life-mh-sleep/blob/main/THIRDPARTY.md).
 
 MIT License
 
