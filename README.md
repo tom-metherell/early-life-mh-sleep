@@ -1,5 +1,5 @@
 # Associations between early-life mental health and abnormal sleep duration in midlife: findings from a prospective cohort study in Great Britain
-This repository contains the supplementary data for the paper "Associations between early-life mental health and abnormal sleep duration in midlife: findings from a prospective cohort study in Great Britain" (preprint available at https://osf.io/a7pqd/).
+This repository contains the supplementary data for the paper "Associations between early-life mental health and abnormal sleep duration in midlife: findings from a prospective cohort study in Great Britain" (preprint available at https://doi.org/10.1101/2023.12.13.23299897).
 
 Please review the licensing information at [`LICENCE.md`](https://github.com/tom-metherell/early-life-mh-sleep/blob/main/LICENCE.md) and [`THIRDPARTY.md`](https://github.com/tom-metherell/early-life-mh-sleep/blob/main/THIRDPARTY.md) before reusing any software in this repository.
 
