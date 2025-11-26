@@ -1997,5 +1997,12 @@ list(
             data_imputed_binary,
             data_imputed_multi
         )
+    ),
+
+    tar_target(
+        dead_emigrated_summary,
+        summarise_dead_emigrated(
+            response
+        )
     )
 )

@@ -770,3 +770,11 @@ summarise_sleep <- function(binary_data, multi_data){
 
     return(sleep_summary)
 }
+
+summarise_dead_emigrated <- function(response_dataset){
+    return(list(
+        no_dead_46 = sum(response_dataset$OUTCME10 == 8),
+        no_emig_46 = sum(response_dataset$OUTCME10 == 7),
+        total_sample = nrow(response_dataset)
+    ))
+}
